@@ -23,6 +23,9 @@ jobs:
         with:
           targets: aarch64-pc-windows-msvc
 
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli
+
       - name: Install frontend deps
         run: npm install
 
