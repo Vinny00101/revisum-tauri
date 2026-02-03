@@ -1,5 +1,5 @@
 import Discipline from "@/lib/models/Discipline";
-import { DisciplineResponse } from "@/types/DisciplineResponse";
+import { DisciplineResponse } from "@/types/TypeInterface";
 
 export function mapDisciplineToResponse(
     discipline: Discipline

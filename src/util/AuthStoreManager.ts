@@ -1,4 +1,4 @@
-import User from "@/types/User";
+import { User } from "@/types/TypeInterface";
 import { load } from "@tauri-apps/plugin-store";
 
 interface AuthData {

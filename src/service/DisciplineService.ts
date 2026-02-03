@@ -2,7 +2,7 @@
 import Discipline from "@/lib/models/Discipline";
 import DisciplineRepository from "@/lib/repository/discipline/DisciplineRepository";
 import UserRepository from "@/lib/repository/user/UserRepository";
-import message from "@/types/Message";
+import { message } from "@/types/TypeInterface";
 import AuthStoreManager from "@/util/AuthStoreManager";
 
 export default class DisciplineService {

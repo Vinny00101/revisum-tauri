@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { X, BookText, Save } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import CreateDisciplineModalProps from "@/types/Create";
 import { useTauri } from "@/context/TauriContext";
-import DisciplineFormData from "@/types/FormData";
 import { useToast } from "@/context/ToastContext";
+import { CreateDisciplineModalProps, DisciplineFormData } from "@/types/TypeInterface";
 
 export default function CreateDisciplineModal({
     isOpen,

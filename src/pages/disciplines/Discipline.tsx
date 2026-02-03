@@ -17,9 +17,9 @@ import {
 } from "lucide-react";
 import CreateDisciplineModal from "./CreateDisciplinesModal";
 import { useTauri } from "@/context/TauriContext";
-import { useToast } from "@/context/ToastContext";
-import { DisciplineResponse } from "@/types/DisciplineResponse";
+import { useToast } from "@/context/ToastContext"; 
 import { mapDisciplineToResponse } from "@/service/mappers/DisciplineMapper";
+import { DisciplineResponse } from "@/types/TypeInterface";
 
 export default function Discipline() {
     const navigate = useNavigate();

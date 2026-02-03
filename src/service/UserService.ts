@@ -1,6 +1,5 @@
 import UserRepository from "@/lib/repository/user/UserRepository";
-import message from "@/types/Message";
-import User from "@/types/User";
+import{ User, message } from "@/types/TypeInterface";
 
 interface Auth{
     message: message;

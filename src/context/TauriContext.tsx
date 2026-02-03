@@ -4,7 +4,7 @@ import UserRepository from "@/lib/repository/user/UserRepository";
 import DisciplineService from "@/service/DisciplineService";
 import UserService from "@/service/UserService";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
-import User from '@/types/User';
+import {User} from '@/types/TypeInterface';
 import AuthStoreManager from "@/util/AuthStoreManager";
 
 interface TauriContextType {
