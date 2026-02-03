@@ -1,8 +1,7 @@
-// src/routes/AppRoutes.tsx
-
 import ProtectedRoutes from "@/components/ProtectedRoute";
 import DashboardLayout from "@/pages/DashboardLayout";
 import Discipline from "@/pages/disciplines/Discipline";
+import DisciplineDetail from "@/pages/disciplines/DisciplineDetail";
 import Login from "@/pages/Login";
 import DashboardMain from "@/pages/painel/DashboardMain";
 import Register from "@/pages/Register";
@@ -18,7 +17,12 @@ export default function AppRoutes() {
       <Route element={<ProtectedRoutes />}>
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardMain />} />
-          <Route path="/disciplines" element={<Discipline />} />
+
+          <Route path="/disciplines">
+            <Route index element={<Discipline />}/>
+            <Route path=":id" element={<DisciplineDetail />}/>
+          </Route>
+
           <Route path="/reviews" element={<DashboardMain />} />
           <Route path="/questions" element={<DashboardMain />} />
           <Route path="/categories" element={<DashboardMain />} />

@@ -49,7 +49,7 @@ export default class DisciplineRepository extends BaseRepository<Discipline> {
         return true;
     }
 
-    async getDiscipline(id: number, user_id: number): Promise<Discipline | null> {
+    async getDiscipline(user_id: number, id: number): Promise<Discipline | null> {
         return this.queryOne(
             this.db,
             DisciplineRepository.discipline_get_sql,

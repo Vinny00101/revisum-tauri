@@ -1,6 +1,6 @@
 // src/pages/disciplines/List.tsx
 import { useState, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
     Search,
     Filter,
@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import CreateDisciplineModal from "./CreateDisciplinesModal";
 import { useTauri } from "@/context/TauriContext";
-import { useToast } from "@/context/ToastContext"; 
+import { useToast } from "@/context/ToastContext";
 import { mapDisciplineToResponse } from "@/service/mappers/DisciplineMapper";
 import { DisciplineResponse } from "@/types/TypeInterface";
 
@@ -364,15 +364,21 @@ export default function Discipline() {
                                                 </div>
                                                 <div>
                                                     <div className="flex items-center gap-2">
-                                                        <span
-                                                            className="font-medium text-gray-900 hover:text-blue-600 cursor-pointer"
-                                                            onClick={() => navigate(`/disciplines/${discipline.id}`)}
+                                                        <NavLink
+                                                            to={`/disciplines/${discipline.id}`}
+                                                            state={{ breadcrumbName: discipline.name }}
                                                         >
-                                                            {discipline.name}
-                                                        </span>
-                                                        {discipline.favorite && (
-                                                            <Star size={14} className="fill-yellow-400 text-yellow-400" />
-                                                        )}
+                                                            <span
+                                                                className="font-medium text-gray-900 hover:text-blue-600 cursor-pointer"
+                                                            >
+                                                                {discipline.name}
+                                                            </span>
+
+                                                            {discipline.favorite && (
+                                                                <Star size={14} className="fill-yellow-400 text-yellow-400" />
+                                                            )}
+                                                        </NavLink>
+
                                                     </div>
                                                     <div className="text-sm text-gray-500 truncate max-w-xs">
                                                         {discipline.description}
@@ -546,8 +552,8 @@ export default function Discipline() {
                                             key={i}
                                             onClick={() => goToPage(i + 1)}
                                             className={`px-3 py-1.5 text-sm rounded-lg border ${currentPage === i + 1
-                                                    ? "bg-blue-50 text-blue-600 border-blue-200"
-                                                    : "border-gray-300 hover:bg-gray-50"
+                                                ? "bg-blue-50 text-blue-600 border-blue-200"
+                                                : "border-gray-300 hover:bg-gray-50"
                                                 }`}
                                         >
                                             {i + 1}
