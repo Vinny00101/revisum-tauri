@@ -39,10 +39,6 @@ export default function Discipline() {
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
     const [filter, setFilter] = useState<"all" | "favorites" | "needs-review">("all");
 
-    const handleSubmitDiscipline = async (Disc: DisciplineFormData) => {
-        console.log(Disc);
-    }
-
     const disciplines: Discipline[] = [
         {
             id: 1,
@@ -558,7 +554,6 @@ export default function Discipline() {
             <CreateDisciplineModal
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
-                onSubmit={handleSubmitDiscipline}
             />
         </div>
     );

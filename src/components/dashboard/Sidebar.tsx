@@ -6,12 +6,14 @@ interface SidebarProps {
   collapsed?: boolean;
   username?: string;
   email?: string;
+  logout: () => void;
 }
 
 export default function Sidebar({ 
     collapsed = false, 
     username,
-    email
+    email,
+    logout
 }: SidebarProps) {
   const [activeItem, setActiveItem] = useState("dashboard");
 
@@ -27,19 +29,17 @@ export default function Sidebar({
 
   return (
     <aside className={`bg-gray-900 text-white transition-all duration-300 ${collapsed ? 'w-20' : 'w-64'} h-screen flex flex-col`}>
-      <div className="p-6 border-b border-gray-800">
+      <div className="px-6  border-b border-gray-800">
         <div className="flex items-center justify-between">
           {!collapsed && (
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="font-bold text-lg">R</span>
-              </div>
-              <h1 className="text-xl font-bold">Revisum</h1>
+            <div className="flex items-center py-1.75">
+              <img className="w-10 h-15" src="/revisum_dark.svg" alt="Revisum" />
+              <h1 className="text-xl font-bold">evisum</h1>
             </div>
           )}
           {collapsed && (
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mx-auto">
-              <span className="font-bold text-lg">R</span>
+            <div className="py-1.75 flex items-center justify-center">
+              <img className="w-10 h-15" src="/revisum_dark.svg" alt="Revisum" />
             </div>
           )}
         </div>
@@ -78,7 +78,7 @@ export default function Sidebar({
               <p className="font-semibold">{username}</p>
               <p className="text-sm text-gray-400 truncate max-w-25">{email}</p>
             </div>
-            <button className="p-2 rounded hover:bg-gray-800 h-ful flex justify-centerl">
+            <button onClick={logout} className="p-2 rounded hover:bg-gray-800 h-ful flex justify-centerl">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>

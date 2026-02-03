@@ -1,5 +1,6 @@
 import AnimatedMessage from "@/components/animation/message";
 import { useTauri } from "@/context/TauriContext";
+import { useToast } from "@/context/ToastContext";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -11,7 +12,8 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<{ code: boolean; message: string } | null>(null);
+  const [message, setMessage] = useState<{ type: MessageType; message: string } | null>(null);
+  const { showToast } = useToast();
 
   const handleRegister = async () => {
     setMessage(null);
@@ -20,15 +22,14 @@ export default function Register() {
       const result = await userService.createUserService(nome, password, email);
 
       if (!result.code) {
-        setMessage({ code: false, message: result.message });
+        showToast({ type: "error", message: result.message });
 
       } else {
-        setMessage({ code: true, message: result.message });
-
-        navigate("/");
+        showToast({type: "success", message: result.message})
+        navigate("/login");
       }
     } catch (err: any) {
-      setMessage({ code: false, message: "Erro inesperado ao tentar logar." });
+      showToast({ type: "error", message: "Erro inesperado ao tentar logar." });
 
       console.error("Login error:", err);
     } finally {
@@ -38,7 +39,7 @@ export default function Register() {
   };
 
   const handleLoginRedirect = () => {
-    navigate("/");
+    navigate("/login");
   };
 
   return (
@@ -50,9 +51,12 @@ export default function Register() {
         duration={2500}
       />
       <div className="bg-white p-10 rounded-xl shadow-2xl w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center mb-2 text-gray-800">
-          Revisum
-        </h1>
+        <div className="w-full h-fit flex justify-center items-center">
+          <img className="w-15 h-20" src="/revisum_ligh.svg" alt="Revisum" />
+          <h1 className="text-4xl font-bold text-center text-gray-800">
+            evisum
+          </h1>
+        </div>
         <p className="text-center text-gray-600 mb-8">Crie sua conta</p>
 
         <div className="space-y-5">

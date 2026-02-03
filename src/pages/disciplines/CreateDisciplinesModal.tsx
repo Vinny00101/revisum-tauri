@@ -1,30 +1,39 @@
-// src/components/disciplines/CreateDisciplineModal.tsx
 import { useState } from "react";
 import { X, BookText, Save } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import CreateDisciplineModalProps from "@/types/Create";
+import { useTauri } from "@/context/TauriContext";
+import DisciplineFormData from "@/types/FormData";
+import { useToast } from "@/context/ToastContext";
 
 export default function CreateDisciplineModal({
     isOpen,
-    onClose,
-    onSubmit
+    onClose
 }: CreateDisciplineModalProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const {discService} = useTauri();
     const [formData, setFormData] = useState<DisciplineFormData>({
         name: "",
         description: "",
     });
+
+    const {showToast} = useToast();
 
     const handleSubmit = async () => {
         if (!formData.name.trim()) return;
 
         setIsSubmitting(true);
         try {
-            await onSubmit(formData);
-            setFormData({ name: "", description: ""});
-            onClose();
+            const message = await discService.createDisciplineService(formData.name, formData.description);
+            if(!message.code){
+                showToast({type: "error", message: message.message});
+            }else{
+                showToast({type: "success", message: message.message});
+                setFormData({ name: "", description: ""});
+                onClose();
+            }
         } catch (error) {
-            console.error("Erro ao criar disciplina:", error);
+            showToast({type: "error", message: "Erro ao criar disciplina"});
         } finally {
             setIsSubmitting(false);
         }
@@ -111,7 +120,7 @@ export default function CreateDisciplineModal({
                                         Cancelar
                                     </button>
                                     <button
-                                        type="submit"
+                                        onClick={handleSubmit}
                                         disabled={!formData.name.trim() || isSubmitting}
                                         className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     >

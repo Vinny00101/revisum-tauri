@@ -2,37 +2,39 @@ import { useTauri } from "@/context/TauriContext";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AnimatedMessage from "@/components/animation/message";
-
+import { useToast } from "@/context/ToastContext";
 
 export default function Login() {
-  const { userService, initialized } = useTauri();
+  const { userService, initialized, login } = useTauri();
   const navigate = useNavigate();
-
   const [username, setUsername] = useState("");
   const [senha, setSenha] = useState("");
-  const [message, setMessage] = useState<{ code: boolean; message: string } | null>(null);
+  const [message, setMessage] = useState<{ type: MessageType; message: string } | null>(null);
   const [loading, setLoading] = useState(false);
+  const {showToast} = useToast();
+
+
 
   const handleLogin = async () => {
-    if (!initialized) return; // evita rodar antes do DB estar pronto
+    if (!initialized) return;
 
     setLoading(true);
     setMessage(null);
 
     try {
       const result = await userService.authenticationUser(username, senha);
+    
 
-      if (!result.code) {
-        setMessage({ code: false, message: result.message });
-
+      if (!result.message.code || !result.user) {
+        showToast({type: "error", message: result.message.message});
+        console.log(message?.message, result.message.code,result.user)
       } else {
-        setMessage({ code: true, message: result.message });
-
+        showToast({ type: "success", message: result.message.message });
+        login(result.user);
         navigate("/dashboard");
       }
     } catch (err: any) {
-      setMessage({ code: false, message: "Erro inesperado ao tentar logar." });
-
+      showToast({type: "error", message: "Erro inesperado ao tentar logar."});
       console.error("Login error:", err);
     } finally {
       setLoading(false);
@@ -47,15 +49,18 @@ export default function Login() {
   return (
     <div className="h-screen w-screen flex items-center justify-center bg-gray-100 overflow-hidden overscroll-none">
 
-      <AnimatedMessage 
+      <AnimatedMessage
         message={message}
         onMessageClear={() => setMessage(null)}
         duration={2500}
       />
       <div className="z-10 bg-white p-10 rounded-xl shadow-2xl w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center mb-2 text-gray-800">
-          Revisum
-        </h1>
+        <div className="w-full h-fit flex justify-center items-center">
+          <img className="w-15 h-20" src="/revisum_ligh.svg" alt="Revisum" />
+          <h1 className="text-4xl font-bold text-center text-gray-800">
+            evisum
+          </h1>
+        </div>
         <p className="text-center text-gray-600 mb-8">Entre para continuar</p>
 
         <div className="space-y-5">
@@ -85,22 +90,22 @@ export default function Login() {
         </div>
 
         <div className="relative py-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">ou</span>
-            </div>
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300"></div>
           </div>
-          
-          <button
-            onClick={handleRegister}
-            className="w-full border border-blue-600 text-blue-600 hover:bg-blue-50 hover:text-blue-700 font-medium py-3 rounded-lg transition duration-200"
-          >
-            <span className="flex items-center font-bold justify-center gap-2">
-              Registrar-se
-            </span>
-          </button>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">ou</span>
+          </div>
+        </div>
+
+        <button
+          onClick={handleRegister}
+          className="w-full border border-blue-600 text-blue-600 hover:bg-blue-50 hover:text-blue-700 font-medium py-3 rounded-lg transition duration-200"
+        >
+          <span className="flex items-center font-bold justify-center gap-2">
+            Registrar-se
+          </span>
+        </button>
 
         <p className="text-center text-sm text-gray-500 mt-6">
           Aplicação ainda em desenvolvimento inicial.

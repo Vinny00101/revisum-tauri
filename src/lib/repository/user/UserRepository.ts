@@ -39,36 +39,22 @@ export default class UserRepository extends BaseRepository<User> {
         passwordHash: string,
         avatarPath?: string | null
     ): Promise<void> {
-
         const now = new Date().toISOString();
 
-        const result = await this.db.execute(
+        const result = await this.execute(
+            this.db,
             UserRepository.SQL_INSERT,
-            [
-                username,
-                email,
-                passwordHash,
-                avatarPath ?? null,
-                now,
-                now
-            ]
-        );
-
-        const id = result.lastInsertId;
-        if (!id) {
-            throw new Error("Falha ao criar usuário, nenhum ID retornado.");
-        }
-
-        // provavelmente deve remover isso
-        User.create(
-            id,
             username,
             email,
             passwordHash,
-            avatarPath ?? null,
-            new Date(now),
-            new Date(now)
-        );
+            avatarPath?? null,
+            now,
+            now
+        )
+
+        if(!result.lastInsertId){
+            throw new Error("Falha ao criar usuário, nenhum ID retornado.");
+        }
     }
 
     async verifyUser(username: string): Promise<User | null> {

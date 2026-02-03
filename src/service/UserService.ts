@@ -1,12 +1,15 @@
 import UserRepository from "@/lib/repository/user/UserRepository";
-import SessionManager from "./SessionManager";
-import UserDto from "@/dto/UserDto";
 import message from "@/types/Message";
+import User from "@/types/User";
+
+interface Auth{
+    message: message;
+    user: User | null;
+}
 
 export default class UserService {
     constructor(
         private userRepository: UserRepository,
-        private session: SessionManager
     ) { }
 
     private async hashPassword(password: string): Promise<string> {
@@ -24,11 +27,14 @@ export default class UserService {
         return btoa(binary);
     }
 
-    async authenticationUser(username: string, password: string): Promise<message> {
+    async authenticationUser(username: string, password: string): Promise<Auth> {
         if (!username || !password) {
             return {
-                code: false,
-                message: "Campos não preenchidos"
+                message: {
+                    code: false,
+                    message: "Campos não preenchidos"
+                },
+                user: null
             }
         }
 
@@ -37,17 +43,30 @@ export default class UserService {
         const user = await this.userRepository.verifyUser(username);
         if (!user || user.passwordHash !== hashPassword) {
             return {
-                code: false,
-                message: "username ou password incorreto"
+                message: {
+                    code: false,
+                    message: "username ou password incorreto"
+                },
+                user: null
             }
         }
 
-        const userdto = new UserDto(user);
-        this.session.login(userdto);
+        const userdto: User = {
+            id: user.id,
+            name: user.username,
+            email: user.email,
+            avatarPath: user.avatarPath,
+            createdAt: user.createdAt.toISOString(),
+            updatedAt: user.updatedAt.toISOString(),
+        }
+        console.log(userdto);
         return {
-            code: true,
-            message: "Logado com sucesso"
-        };
+            message: {
+                code: true,
+                message: "Logado com sucesso"
+            },
+            user: userdto
+        }
     }
 
     async createUserService(username: string, password: string, email: string): Promise<message> {
@@ -79,17 +98,5 @@ export default class UserService {
             code: true,
             message: "Registro efetuado com sucesso"
         };
-    }
-
-    logout() {
-        this.session.logout();
-    }
-
-    getCurrentUser(): UserDto | null {
-        return this.session.getUser();
-    }
-
-    isLogged(): boolean {
-        return this.session.isLogged();
     }
 }

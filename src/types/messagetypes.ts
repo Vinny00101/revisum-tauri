@@ -1,0 +1,1 @@
+type MessageType = "success" | "info" | "warning" | "error";

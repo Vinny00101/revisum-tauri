@@ -1,7 +1,7 @@
 import Discipline from "@/lib/models/Discipline";
-import BaseRepository from "../Baserepository";
 import Database from "@tauri-apps/plugin-sql";
 import { RowMapper } from "../RowMapper";
+import BaseRepository from "../Baserepository";
 
 
 export default class DisciplineRepository extends BaseRepository<Discipline> {
@@ -9,8 +9,9 @@ export default class DisciplineRepository extends BaseRepository<Discipline> {
     //public static readonly discipline_put_sql: string = "UPDATE discipline SET name = ?, description = ?, updated_at = ? WHERE id = ? AND user_id = ?";
     //public static readonly discipline_delete_sql: string = "DELETE FROM discipline WHERE id = ? AND user_id = ?";
     public static readonly discipline_get_sql: string = "SELECT * FROM discipline WHERE id = ? AND user_id = ?";
-    //private static readonly discipline_getAll_sql: string = "SELECT * FROM discipline WHERE user_id = ? ORDER BY created_at DESC";
-    //public static readonly discipline_exists_sql: string = "SELECT 1 FROM discipline WHERE user_id = ? AND name = ? LIMIT 1";
+    private static readonly discipline_getAll_sql: string = "SELECT * FROM discipline WHERE user_id = ? ORDER BY created_at DESC";
+    public static readonly discipline_exists_name_sql: string = "SELECT 1 FROM discipline WHERE user_id = ? AND name = ? LIMIT 1";
+    public static readonly discipline_exists_sql: string = "SELECT 1 FROM discipline WHERE user_id = ? AND id = ? LIMIT 1";
 
     constructor(private readonly db: Database) {
         super();
@@ -27,26 +28,25 @@ export default class DisciplineRepository extends BaseRepository<Discipline> {
 
     async createDiscipline(
         user_id: number,
-        name: number,
+        name: string,
         description?: string | null,
-    ): Promise<void> {
+    ): Promise<Boolean> {
         const now = new Date().toISOString();
 
-        const result = await this.db.execute(
+        const result = await this.execute(
+            this.db,
             DisciplineRepository.discipline_post_sql,
-            [
-                user_id,
-                name,
-                description ?? null,
-                now,
-                now
-            ]
-        );
+            user_id,
+            name,
+            description ?? null,
+            now,
+            now
+        )
 
-        const id = result.lastInsertId;
-        if (!id) {
-            throw new Error("Falha ao criar usuário, nenhum ID retornado.");
+        if (!result.lastInsertId){
+            return false;
         }
+        return true;
     }
 
     async getDiscipline(id: number, user_id: number): Promise<Discipline | null> {
@@ -59,6 +59,36 @@ export default class DisciplineRepository extends BaseRepository<Discipline> {
         );
     }
 
+    async getAllDiscipline(user_id: number): Promise<Discipline[]>{
+        return this.queryList(
+            this.db,
+            DisciplineRepository.discipline_getAll_sql,
+            this.mapper,
+            user_id
+        )
+    } 
 
+    async existsNameDiscipline(user_id: number, name: string): Promise<Boolean> {
+        const result = await this.db.select(
+            DisciplineRepository.discipline_exists_name_sql,
+            [
+                user_id,
+                name
+            ]
+        )as unknown[];
 
+        return result.length > 0;
+    }
+
+    async existsById(user_id: number, id: number): Promise<Boolean> {
+        const result = await this.db.select(
+            DisciplineRepository.discipline_exists_sql,
+            [
+                user_id,
+                id
+            ]
+        )as unknown[];
+
+        return result.length > 0;
+    }
 }
