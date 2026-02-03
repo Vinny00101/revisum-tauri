@@ -1,5 +1,5 @@
 // src/pages/disciplines/List.tsx
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Search,
@@ -16,79 +16,49 @@ import {
     BarChart3
 } from "lucide-react";
 import CreateDisciplineModal from "./CreateDisciplinesModal";
-
-interface Discipline {
-    id: number;
-    name: string;
-    description: string;
-    itemCount: number;
-    cardCount: number;
-    questionCount: number;
-    progress: number;
-    lastStudied: string | null;
-    createdAt: string;
-    favorite: boolean;
-}
+import { useTauri } from "@/context/TauriContext";
+import { useToast } from "@/context/ToastContext";
+import { DisciplineResponse } from "@/types/DisciplineResponse";
+import { mapDisciplineToResponse } from "@/service/mappers/DisciplineMapper";
 
 export default function Discipline() {
     const navigate = useNavigate();
     const [search, setSearch] = useState("");
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [selectedRows, setSelectedRows] = useState<number[]>([]);
-    const [sortField, setSortField] = useState<keyof Discipline>("lastStudied");
+    const [sortField, setSortField] = useState<keyof DisciplineResponse>("lastStudied");
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
     const [filter, setFilter] = useState<"all" | "favorites" | "needs-review">("all");
 
-    const disciplines: Discipline[] = [
-        {
-            id: 1,
-            name: "Matemática Avançada",
-            description: "Cálculo, Álgebra Linear e Estatística",
-            itemCount: 245,
-            cardCount: 120,
-            questionCount: 125,
-            progress: 75,
-            lastStudied: "2024-01-20 14:30",
-            createdAt: "2024-01-15",
-            favorite: true
-        },
-        {
-            id: 2,
-            name: "História do Brasil",
-            description: "Período colonial até república",
-            itemCount: 180,
-            cardCount: 90,
-            questionCount: 90,
-            progress: 45,
-            lastStudied: "2024-01-19 10:15",
-            createdAt: "2024-02-10",
-            favorite: false
-        },
-        {
-            id: 3,
-            name: "Programação em Python",
-            description: "Estruturas de dados e algoritmos",
-            itemCount: 320,
-            cardCount: 150,
-            questionCount: 170,
-            progress: 92,
-            lastStudied: "2024-01-20 16:45",
-            createdAt: "2024-01-05",
-            favorite: true
-        },
-        {
-            id: 4,
-            name: "Biologia Celular",
-            description: "Estrutura e função das células",
-            itemCount: 95,
-            cardCount: 60,
-            questionCount: 35,
-            progress: 28,
-            lastStudied: null,
-            createdAt: "2024-01-25",
-            favorite: false
+    const [disciplines, setDisciplines] = useState<DisciplineResponse[]>([]);
+    const { showToast } = useToast();
+    const { discService } = useTauri();
+    const ITEMS_PER_PAGE = 5;
+    const [currentPage, setCurrentPage] = useState(1);
+
+
+
+    const getAllDiscipline = async () => {
+
+        try {
+            const result = await discService.getAllDiscipline();
+            if (result.message.code && result.listDisc) {
+                const adapted = result.listDisc.map(mapDisciplineToResponse);
+                setDisciplines(adapted);
+
+            } else {
+                showToast({ type: "error", message: result.message.message });
+                setDisciplines([])
+            }
+        } catch (err: any) {
+            showToast({ type: "error", message: "Erro inesperado ao buscar disciplinas." });
+            console.error("Discipline error:", err);
         }
-    ];
+    }
+
+    useEffect(() => {
+        getAllDiscipline();
+    }, []);
 
     const filteredDisciplines = useMemo(() => {
         let result = [...disciplines];
@@ -112,7 +82,7 @@ export default function Discipline() {
             const aValue = a[sortField];
             const bValue = b[sortField];
 
-            if (aValue == null) return 1; 
+            if (aValue == null) return 1;
             if (bValue == null) return -1;
 
             if (
@@ -145,7 +115,7 @@ export default function Discipline() {
                 const boolB = bValue as boolean;
                 if (boolA === boolB) return 0;
                 if (sortDirection === "desc") {
-                    return boolA ? -1 : 1; 
+                    return boolA ? -1 : 1;
                 } else {
                     return boolA ? 1 : -1;
                 }
@@ -156,6 +126,27 @@ export default function Discipline() {
 
         return result;
     }, [disciplines, search, filter, sortField, sortDirection]);
+
+    const totalItems = filteredDisciplines.length;
+    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+
+    const paginatedDisciplines = filteredDisciplines.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
+
+    const goToPrevious = () => {
+        setCurrentPage((p) => Math.max(1, p - 1));
+    };
+
+    const goToNext = () => {
+        setCurrentPage((p) => Math.min(totalPages, p + 1));
+    };
+
+    const goToPage = (page: number) => {
+        setCurrentPage(page);
+    };
+
 
     // Manipular seleção
     const handleSelectAll = () => {
@@ -175,7 +166,7 @@ export default function Discipline() {
     };
 
     // Manipular ordenação
-    const handleSort = (field: keyof Discipline) => {
+    const handleSort = (field: keyof DisciplineResponse) => {
         if (sortField === field) {
             setSortDirection(sortDirection === "asc" ? "desc" : "asc");
         } else {
@@ -282,7 +273,7 @@ export default function Discipline() {
                                 <th className="w-12 px-6 py-4">
                                     <input
                                         type="checkbox"
-                                        checked={selectedRows.length === filteredDisciplines.length && filteredDisciplines.length > 0}
+                                        checked={selectedRows.length === paginatedDisciplines.length && paginatedDisciplines.length > 0}
                                         onChange={handleSelectAll}
                                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                     />
@@ -348,7 +339,7 @@ export default function Discipline() {
                         </thead>
 
                         <tbody className="divide-y divide-gray-200">
-                            {filteredDisciplines.map((discipline) => (
+                            {paginatedDisciplines.map((discipline) => (
                                 <tr
                                     key={discipline.id}
                                     className={`hover:bg-gray-50 transition-colors ${selectedRows.includes(discipline.id) ? "bg-blue-50" : ""
@@ -425,8 +416,8 @@ export default function Discipline() {
                                             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                                                 <div
                                                     className={`h-full rounded-full ${discipline.progress >= 80 ? "bg-green-500" :
-                                                            discipline.progress >= 50 ? "bg-blue-500" :
-                                                                discipline.progress >= 20 ? "bg-yellow-500" : "bg-red-500"
+                                                        discipline.progress >= 50 ? "bg-blue-500" :
+                                                            discipline.progress >= 20 ? "bg-yellow-500" : "bg-red-500"
                                                         }`}
                                                     style={{ width: `${discipline.progress}%` }}
                                                 ></div>
@@ -497,7 +488,7 @@ export default function Discipline() {
                     </table>
 
                     {/* Estado Vazio */}
-                    {filteredDisciplines.length === 0 && (
+                    {paginatedDisciplines.length === 0 && (
                         <div className="text-center py-12">
                             <div className="w-16 h-16 mx-auto mb-4 text-gray-300">
                                 <BookOpen size={64} />
@@ -509,7 +500,7 @@ export default function Discipline() {
                                 {search ? "Tente ajustar sua busca" : "Comece criando sua primeira disciplina"}
                             </p>
                             <button
-                                onClick={() => navigate("/disciplines/create")}
+                                onClick={() => setIsCreateModalOpen(true)}
                                 className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
                             >
                                 Criar Primeira Disciplina
@@ -521,27 +512,53 @@ export default function Discipline() {
                 {filteredDisciplines.length > 0 && (
                     <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
                         <div className="flex items-center justify-between">
+
+                            {/* Resumo */}
                             <div className="text-sm text-gray-600">
-                                Mostrando {filteredDisciplines.length} de {disciplines.length} disciplinas
+                                Mostrando {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
+                                {Math.min(currentPage * ITEMS_PER_PAGE, filteredDisciplines.length)}
+                                {" "}de {disciplines.length} disciplinas
                                 {search && ` • Filtrado por: "${search}"`}
                             </div>
 
                             <div className="flex items-center gap-4">
+
+                                {/* Métrica */}
                                 <div className="text-sm text-gray-600">
-                                    <span className="font-medium">{disciplines.reduce((acc, d) => acc + d.itemCount, 0)}</span> itens no total
+                                    <span className="font-medium">
+                                        {disciplines.reduce((acc, d) => acc + d.itemCount, 0)}
+                                    </span>{" "}
+                                    itens no total
                                 </div>
 
+                                {/* Paginação */}
                                 <div className="flex gap-2">
-                                    <button className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
+                                    <button
+                                        onClick={goToPrevious}
+                                        disabled={currentPage === 1}
+                                        className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                                    >
                                         Anterior
                                     </button>
-                                    <button className="px-3 py-1.5 text-sm bg-blue-50 text-blue-600 border border-blue-200 rounded-lg">
-                                        1
-                                    </button>
-                                    <button className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
-                                        2
-                                    </button>
-                                    <button className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
+
+                                    {Array.from({ length: totalPages }).map((_, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => goToPage(i + 1)}
+                                            className={`px-3 py-1.5 text-sm rounded-lg border ${currentPage === i + 1
+                                                    ? "bg-blue-50 text-blue-600 border-blue-200"
+                                                    : "border-gray-300 hover:bg-gray-50"
+                                                }`}
+                                        >
+                                            {i + 1}
+                                        </button>
+                                    ))}
+
+                                    <button
+                                        onClick={goToNext}
+                                        disabled={currentPage === totalPages}
+                                        className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                                    >
                                         Próxima
                                     </button>
                                 </div>
@@ -549,11 +566,13 @@ export default function Discipline() {
                         </div>
                     </div>
                 )}
+
             </div>
 
             <CreateDisciplineModal
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
+                reloadTable={getAllDiscipline}
             />
         </div>
     );

@@ -1,5 +1,4 @@
 import { NavLink } from "react-router-dom";
-import { useState } from "react";
 import { BarChart3, BookOpen, BookText, HelpCircle, Home, Settings, Tag } from "lucide-react";
 
 interface SidebarProps {
@@ -9,13 +8,12 @@ interface SidebarProps {
   logout: () => void;
 }
 
-export default function Sidebar({ 
-    collapsed = false, 
-    username,
-    email,
-    logout
+export default function Sidebar({
+  collapsed = false,
+  username,
+  email,
+  logout
 }: SidebarProps) {
-  const [activeItem, setActiveItem] = useState("dashboard");
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: Home, path: "/dashboard" },
@@ -50,20 +48,20 @@ export default function Sidebar({
           const Icon = item.icon;
           return (
             <NavLink
-            key={item.id}
-            to={`/${item.id}`}
-            onClick={() => setActiveItem(item.id)}
-            className={({ isActive }) => `
+              key={item.id}
+              to={item.path}
+              end={item.path === "/dashboard"}
+              className={({ isActive }) => `
               flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200
-              ${isActive || activeItem === item.id
-                ? 'bg-blue-600 text-white'
-                : 'hover:bg-gray-800 text-gray-300 hover:text-white'
-              }
-            `}
-          >
-            <Icon size={20} className="shrink-0" />
-            {!collapsed && <span className="font-medium">{item.label}</span>}
-          </NavLink>
+              ${isActive
+                  ? "bg-blue-600 text-white"
+                  : "hover:bg-gray-800 text-gray-300 hover:text-white"
+                }
+  `}
+            >
+              <Icon size={20} className="shrink-0" />
+              {!collapsed && <span className="font-medium">{item.label}</span>}
+            </NavLink>
           );
         })}
       </nav>

@@ -8,7 +8,8 @@ import { useToast } from "@/context/ToastContext";
 
 export default function CreateDisciplineModal({
     isOpen,
-    onClose
+    onClose,
+    reloadTable
 }: CreateDisciplineModalProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const {discService} = useTauri();
@@ -29,6 +30,7 @@ export default function CreateDisciplineModal({
                 showToast({type: "error", message: message.message});
             }else{
                 showToast({type: "success", message: message.message});
+                reloadTable();
                 setFormData({ name: "", description: ""});
                 onClose();
             }
