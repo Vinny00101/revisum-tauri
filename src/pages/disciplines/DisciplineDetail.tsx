@@ -1,30 +1,32 @@
+import { contentColumns } from "@/components/content/contentColumns";
 import { Breadcrumb } from "@/components/dashboard/Breadcrumb";
 import ActionButtons from "@/components/discipline/ActionButtons";
 import ProgressBar from "@/components/discipline/Progress";
 import StatusBadge from "@/components/discipline/StatusBadge";
+import { DataTable } from "@/components/tables/DataTables";
+import { useSmartFilterSearch } from "@/components/tables/hooks/useBarTools";
 import { useTauri } from "@/context/TauriContext";
 import { useToast } from "@/context/ToastContext";
 import { mapDisciplineToResponse } from "@/service/mappers/DisciplineMapper";
 import { DisciplineResponse } from "@/types/TypeInterface";
 import { number } from "framer-motion";
-import { BarChart3, BookOpen, Calendar, Edit, FileText, Filter, MoreVertical, Plus, Search, Star } from "lucide-react";
+import { BarChart3, BookOpen, Calendar, FileText, Filter, Plus, Search, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { ContentResponse } from "@/types/TypeInterface";
+import { contentFilters, contentSearch } from "@/components/content/contentTool";
 
 export default function DisciplineDetail() {
     const navigate = useNavigate();
     const { showToast } = useToast();
     const { discService } = useTauri();
-    const [discipline, setDiscipline] = useState<DisciplineResponse>();
     const { id } = useParams();
-
+    const [discipline, setDiscipline] = useState<DisciplineResponse>();
+    const [contents, setContents] = useState<ContentResponse[]>([]);
     // precisa ser implementado algumas coisas que estão aqui em baixo, e uma refatoracção do codigo de disciplina.
     const [loading, setLoading] = useState(true);
     const [isCreateItemModalOpen, setIsCreateItemModalOpen] = useState(false);
-    const [items, setItems] = useState<any[]>([]);
-    const [search, setSearch] = useState("");
-    const [sortField, setSortField] = useState<keyof any>("createdAt");
-    const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+    const { filter, search, setFilter, setSearch, processedData } = useSmartFilterSearch(contents, contentFilters, "all", contentSearch);
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
 
     const getDiscipline = async () => {
@@ -62,26 +64,6 @@ export default function DisciplineDetail() {
     useEffect(() => {
         getDiscipline();
     }, []);
-
-    const handleDelete = async () => {
-        try {
-            //const result = await discService.deleteDiscipline(parseInt(id!));
-            /*
-            if (result.message.code) {
-                showToast({ type: "success", message: "Disciplina excluída com sucesso" });
-                navigate("/disciplines");
-            }
-                */
-            showToast({ type: "info", message: "Deletar em desenvolvimento" });
-        } catch (err) {
-            showToast({ type: "error", message: "Erro ao excluir disciplina" });
-        }
-    };
-
-    const handleExport = () => {
-        // Implementar lógica de exportação
-        showToast({ type: "info", message: "Exportação em desenvolvimento" });
-    };
 
     const handleToggleFavorite = async () => {
         if (!discipline) return;
@@ -151,7 +133,6 @@ export default function DisciplineDetail() {
                                             )}
                                             <StatusBadge
                                                 lastStudied={discipline.lastStudied}
-                                                progress={discipline.progress}
                                             />
                                         </div>
 
@@ -167,8 +148,6 @@ export default function DisciplineDetail() {
                                             disciplineId={discipline.id}
                                             isFavorite={discipline.favorite}
                                             onToggleFavorite={handleToggleFavorite}
-                                            onDelete={handleDelete}
-                                            onExport={handleExport}
                                         />
                                     </div>
                                 </div>
@@ -276,11 +255,16 @@ export default function DisciplineDetail() {
                             </div>
 
                             <div className="flex gap-3">
-                                <select className="px-4 py-2.5 model-input">
-                                    <option>Todos os tipos</option>
-                                    <option>Cards</option>
-                                    <option>Questões</option>
-                                    <option>Material</option>
+                                <select 
+                                value={filter}
+                                onChange={(e) => setFilter(e.target.value as any)}
+                                className="px-4 py-2.5 model-input"
+                                >
+                                    {contentFilters.map((filterOption) => (
+                                        <option key={filterOption.key} value={filterOption.key}>
+                                            {filterOption.label}
+                                        </option>
+                                    ))}
                                 </select>
 
                                 <button className="px-4 py-2.5 model-input flex items-center gap-2">
@@ -293,94 +277,11 @@ export default function DisciplineDetail() {
 
                     {/* Lista de Itens */}
                     <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="w-12 px-6 py-3 text-left">
-                                        <input type="checkbox" className="rounded border-gray-300" />
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                                        título
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                                        descrição
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                                        ordem de exibição
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                                        Criado em
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                                        atualizado em
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                                        Ações
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                                {items.length > 0 ? (
-                                    items.map((item) => (
-                                        <tr key={item.id} className="hover:bg-gray-50">
-                                            <td className="px-6 py-4">
-                                                <input
-                                                    type="checkbox"
-                                                    className="rounded border-gray-300"
-                                                    onChange={() => {/* handle select */ }}
-                                                />
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className="font-medium text-gray-900">
-                                                    {item.name}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                                                    {item.type}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
-                                                    {item.status}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-500">
-                                                {new Date(item.createdAt).toLocaleDateString('pt-BR')}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2">
-                                                    <button className="p-1.5 text-blue-600 hover:bg-blue-50 rounded">
-                                                        <Edit size={16} />
-                                                    </button>
-                                                    <button className="p-1.5 text-gray-600 hover:bg-gray-50 rounded">
-                                                        <MoreVertical size={16} />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={7} className="px-6 py-12 text-center">
-                                            <div className="text-gray-500">
-                                                <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                                                <p>Nenhum conteúdo encontrado</p>
-                                                <p className="text-sm mt-1">
-                                                    Comece criando seu primeiro conteúdo
-                                                </p>
-                                                <button
-                                                    onClick={() => setIsCreateItemModalOpen(true)}
-                                                    className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                                                >
-                                                    Criar Primeiro conteúdo
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+                        <DataTable
+                            data={processedData}
+                            columns={contentColumns}
+                            pageSize={7}
+                        />
                     </div>
                 </div>
 

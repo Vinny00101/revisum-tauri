@@ -1,11 +1,13 @@
 import { Clock, AlertCircle, CheckCircle } from "lucide-react";
 
+type styleStatusBadge = "default" | "Simple";
+
 interface StatusBadgeProps {
     lastStudied: string | null;
-    progress: number;
+    type?: styleStatusBadge; 
 }
 
-export default function StatusBadge({ lastStudied }: StatusBadgeProps) {
+export default function StatusBadge({ lastStudied, type = "default" }: StatusBadgeProps) {
     const getStudyStatus = () => {
         if (!lastStudied) return "never-studied";
         
@@ -25,7 +27,7 @@ export default function StatusBadge({ lastStudied }: StatusBadgeProps) {
             label: "Nunca estudado",
             icon: Clock,
             color: "text-gray-600",
-            bgColor: "bg-gray-100"
+            bgColor: "bg-gray-300"
         },
         "needs-review": {
             label: "Precisa revisar",
@@ -48,6 +50,17 @@ export default function StatusBadge({ lastStudied }: StatusBadgeProps) {
     }[status];
 
     const Icon = config.icon;
+
+    if(type == "Simple"){
+        return (
+            <div className="inline-flex items-center justify-center gap-2">
+                <div className={`w-2 h-2 rounded-full  ${config.bgColor}`}></div>
+                <span className={`text-xs font-medium ${config.color}`}>
+                {config.label}
+                </span>
+            </div>
+        )
+    }
 
     return (
         <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full ${config.bgColor}`}>

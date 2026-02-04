@@ -1,3 +1,4 @@
+import { useToast } from "@/context/ToastContext";
 import { Edit, Play, MoreVertical, Trash2, Download, Star } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -6,18 +7,15 @@ interface ActionButtonsProps {
     disciplineId: number;
     isFavorite?: boolean;
     onToggleFavorite?: () => void;
-    onDelete?: () => void;
-    onExport?: () => void;
 }
 
 export default function ActionButtons({
     disciplineId,
     isFavorite = false,
-    onToggleFavorite,
-    onDelete,
-    onExport
+    onToggleFavorite
 }: ActionButtonsProps) {
     const navigate = useNavigate();
+    const {showToast} = useToast();
     const [showDropdown, setShowDropdown] = useState(false);
 
     const handleStudy = () => {
@@ -28,8 +26,28 @@ export default function ActionButtons({
         navigate(`/disciplines/${disciplineId}/edit`);
     };
 
+    const handleDelete = async () => {
+        try {
+            //const result = await discService.deleteDiscipline(parseInt(id!));
+            /*
+            if (result.message.code) {
+                showToast({ type: "success", message: "Disciplina excluída com sucesso" });
+                navigate("/disciplines");
+            }
+                */
+            showToast({ type: "info", message: "Deletar em desenvolvimento" });
+        } catch (err) {
+            showToast({ type: "error", message: "Erro ao excluir disciplina" });
+        }
+    };
+
+    const handleExport = () => {
+        // Implementar lógica de exportação
+        showToast({ type: "info", message: "Exportação em desenvolvimento" });
+    };
+
     return (
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center gap-2">
             {/* Botão de Estudar */}
             <button
                 onClick={handleStudy}
@@ -80,10 +98,10 @@ export default function ActionButtons({
                         />
                         <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                             <div className="py-1">
-                                {onExport && (
+                                {handleExport && (
                                     <button
                                         onClick={() => {
-                                            onExport();
+                                            handleExport();
                                             setShowDropdown(false);
                                         }}
                                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
@@ -92,10 +110,10 @@ export default function ActionButtons({
                                         Exportar dados
                                     </button>
                                 )}
-                                {onDelete && (
+                                {handleDelete && (
                                     <button
                                         onClick={() => {
-                                            onDelete();
+                                            handleDelete();
                                             setShowDropdown(false);
                                         }}
                                         className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
