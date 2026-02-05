@@ -1,6 +1,9 @@
-use crate::db::migration;
+use tauri::{Manager, async_runtime::block_on};
+
+use crate::db::{config::init_db, migration};
 
 mod db;
+mod error;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -10,6 +13,13 @@ fn greet(name: &str) -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .setup(|app|{
+            let app_handle = app.handle().clone();
+            let state = block_on(init_db(&app_handle))
+                .map_err(|e| format!("Falha na inicialização do banco: {}", e))?;
+            app_handle.manage(state);
+            Ok(())
+        })
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(
             tauri_plugin_sql::Builder::default()
