@@ -5,10 +5,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Register() {
-  const { userService } = useTauri();
+  const { userService, invoke } = useTauri();
 
   const navigate = useNavigate();
-  const [nome, setNome] = useState("");
+  const [username, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,10 @@ export default function Register() {
     setMessage(null);
 
     try {
-      const result = await userService.createUserService(nome, password, email);
+      const result = await invoke<{ code: number; message: string }>(
+        "create_user_command",{username: username, password: password, email: email}
+      )
+      //const result = await userService.createUserService(nome, password, email);
 
       if (!result.code) {
         showToast({ type: "error", message: result.message });
@@ -65,7 +68,7 @@ export default function Register() {
               id="nome"
               type="text"
               placeholder="Digite seu nome completo"
-              value={nome}
+              value={username}
               onChange={(e) => setNome(e.target.value)}
               className="w-full px-4 py-3 base-input"
             />

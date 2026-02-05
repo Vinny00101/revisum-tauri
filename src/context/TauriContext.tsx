@@ -6,8 +6,10 @@ import UserService from "@/service/UserService";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import {User} from '@/types/TypeInterface';
 import AuthStoreManager from "@/util/AuthStoreManager";
+import { invoke } from "@tauri-apps/api/core";
 
 interface TauriContextType {
+  invoke: typeof invoke;
   user: User | null;
   userService: UserService;
   discService: DisciplineService;
@@ -101,6 +103,7 @@ export function TauriProvider({ children }: { children: ReactNode }) {
 
   return (
     <TauriContext.Provider value={{
+      invoke,
       user,
       userService: userService!,
       discService: discService!,

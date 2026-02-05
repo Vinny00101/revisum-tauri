@@ -69,7 +69,7 @@ pub async fn db_select_many<T>(
     values: Vec<JsonValue>,
 ) -> Result<Vec<T>, AppError>
 where
-    T: for<'r> FromRow<'r, SqliteRow> + Send + Unpin + 'static,
+    T: for<'r> FromRow<'r, SqliteRow> + Unpin + Send + 'static,
 {
     let mut sql_query = sqlx::query(query);
 
@@ -99,7 +99,7 @@ pub async fn db_select_one<T>(
     values: Vec<JsonValue>,
 ) -> Result<Option<T>, AppError> 
 where 
-    T: for<'r> FromRow<'r, SqliteRow> + Send + Unpin + 'static, 
+    T: for<'r> FromRow<'r, SqliteRow> + Unpin + Send + 'static,
 {
     let mut sql_query = sqlx::query(query);
 
