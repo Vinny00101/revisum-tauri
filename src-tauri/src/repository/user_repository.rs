@@ -40,7 +40,7 @@ impl<'a> UserRepository<'a> {
         values.push(JsonValue::String(now.clone()));
         values.push(JsonValue::String(now));
 
-        self.create(
+        self.execute(
             "INSERT INTO user (username, email, password, avatar_path, created_at, updated_at)VALUES (?, ?, ?, ?, ?, ?)",
             values,
         ).await

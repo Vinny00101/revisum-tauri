@@ -15,8 +15,10 @@ pub enum AppError {
     #[error("Conexão falhou: {0}")]
     ConnectionFailed(String),
 
+    /*
     #[error("Registro não encontrado")]
     NotFound,
+     */
 
     #[error("Entrada inválida: {0}")]
     InvalidInput(String),

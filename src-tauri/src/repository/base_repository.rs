@@ -49,22 +49,7 @@ pub trait QueryRepository {
 pub trait MutationRepository {
     fn get_state(&self) -> &State<'_, DbStore>;
 
-    async fn create(
-        &self,
-        sql: &str,
-        values: Vec<JsonValue>,
-    ) -> Result<ExecuteResult, AppError>{
-        db_execute(self.get_state(), sql, values).await
-    }
-
-    async fn update(
-        &self,
-        sql: &str,
-        values: Vec<JsonValue>,
-    ) -> Result<ExecuteResult, AppError>{
-        db_execute(self.get_state(), sql, values).await
-    }
-    async fn delete(
+    async fn execute(
         &self,
         sql: &str,
         values: Vec<JsonValue>,

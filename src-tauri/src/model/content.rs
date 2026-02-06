@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 
 #[derive(Debug, Clone, sqlx::FromRow)]
-pub struct content{
+pub struct Content{
     pub id: i64,
     pub discipline_id: i64,
     pub title: String,
