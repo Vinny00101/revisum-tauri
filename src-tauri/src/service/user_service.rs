@@ -1,9 +1,19 @@
 use crate::{
-    error::app_error::AppError, repository::user_repository::{User, UserRepository},
+    error::app_error::AppError, repository::user_repository::UserRepository, service::dto::user_response::UserResponse
 };
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use password_hash::{SaltString};
 use rand::rngs::OsRng;
+
+/*
+id: number,
+username: string,
+email: string,
+avatarPath: string | null,
+createdAt: Date,
+updatedAt: Date
+*/
+
 
 #[derive(serde::Serialize)]
 pub struct Message {
@@ -15,7 +25,7 @@ pub struct Message {
 pub struct Auth {
     pub code: bool,
     pub message: String,
-    pub user: Option<User>,
+    pub user: Option<UserResponse>,
 }
 
 pub struct UserService<'a> {
@@ -98,8 +108,16 @@ impl<'a> UserService<'a> {
             });
         }
 
-        let user_result: User = self.user_repository.get_user(username).await?
-            .ok_or(AppError::NotFound)?;
+        let user= self.user_repository.get_user(username).await?;
+        if user.is_none() {
+            return Ok(Auth { 
+                code: false, 
+                message: "username ou password incorreto".into(), 
+                user: None 
+            });
+        }
+
+        let user_result = user.unwrap();
 
         if !self.verify_password(&password, &user_result.password)?{
             return Ok(Auth {
@@ -109,11 +127,13 @@ impl<'a> UserService<'a> {
             });
         }
 
+        let result = UserResponse::from(&user_result);
+
 
         Ok(Auth { 
             code: true, 
             message: "Logado com sucesso".into(), 
-            user: Some(user_result),
+            user: Some(result),
         })
     }
 }

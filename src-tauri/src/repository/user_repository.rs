@@ -1,9 +1,9 @@
 use std::vec;
 
+use crate::model::user::User;
 use crate::repository::base_repository::{EntityRepository, QueryRepository};
 use crate::{db::db_methods::ExecuteResult, repository::base_repository::MutationRepository};
 use crate::error::app_error::AppError;
-use chrono::{DateTime, Utc};
 use serde_json::Value as JsonValue;
 use tauri::State;
 
@@ -84,17 +84,6 @@ impl<'a> QueryRepository for UserRepository<'a> {
     fn get_state(&self) -> &State<'_, DbStore> {
         &self.state
     }
-}
-
-#[derive(Debug, Clone, serde::Serialize, sqlx::FromRow)]
-pub struct User {
-    pub id: i64,
-    pub username: String,
-    pub email: String,
-    pub password: String,
-    pub avatar_path: Option<String>,
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
 }
 
 impl<'a> EntityRepository<User> for UserRepository<'a> {

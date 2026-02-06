@@ -5,6 +5,7 @@ use command::user_command::{create_user_command, authentication_user_command};
 
 mod db;
 mod error;
+mod model;
 mod repository;
 mod service;
 mod command;
