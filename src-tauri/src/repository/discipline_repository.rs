@@ -9,6 +9,9 @@ pub(crate) struct DisciplineRepository<'a>{
 } 
 
 impl<'a> DisciplineRepository<'a> {
+    pub fn new(state: State<'a, DbStore>) -> Self {
+        Self { state }
+    }
     // create_discipline
     pub async fn create_discipline(
         &self,

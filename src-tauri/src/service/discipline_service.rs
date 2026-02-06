@@ -16,6 +16,7 @@ pub struct DisciplineDataOne {
     pub discipline: Option<DisciplineResponse>,
 }
 
+#[derive(serde::Serialize)]
 pub struct DisciplineDataAll {
     pub message: Message,
     pub discipline: Option<Vec<DisciplineResponse>>,
