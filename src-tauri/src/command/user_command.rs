@@ -4,7 +4,7 @@ use tauri::{command, State};
 use crate::{
     db::config::DbStore,
     repository::user_repository::UserRepository,
-    service::user_service::{Auth, Message, UserService},
+    service::{dto::message_response::Message, user_service::{Auth, UserService}},
 };
 
 

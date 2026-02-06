@@ -15,3 +15,9 @@ pub struct UpdateDiscipline {
     pub name: Option<String>,
     pub description: Option<String>,
 }
+
+impl UpdateDiscipline {
+    pub fn new(name: Option<String>, description: Option<String>,) -> Self {
+        Self { name, description }
+    }
+}

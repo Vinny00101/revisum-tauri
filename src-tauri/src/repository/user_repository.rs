@@ -71,6 +71,16 @@ impl<'a> UserRepository<'a> {
             values,
         ).await
     }
+
+    pub async fn exists_by_id(
+        &self,
+        user_id: i64,
+    ) -> Result<bool, AppError> {
+        self.exists(
+            "SELECT * FROM user WHERE id = ? LIMIT 1", 
+            vec![JsonValue::from(user_id)]
+        ).await
+    }
 }
 
 

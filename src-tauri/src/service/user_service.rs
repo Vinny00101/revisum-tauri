@@ -1,25 +1,9 @@
 use crate::{
-    error::app_error::AppError, repository::user_repository::UserRepository, service::dto::user_response::UserResponse
+    error::app_error::AppError, repository::user_repository::UserRepository, service::dto::{message_response::Message, user_response::UserResponse}
 };
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use password_hash::{SaltString};
 use rand::rngs::OsRng;
-
-/*
-id: number,
-username: string,
-email: string,
-avatarPath: string | null,
-createdAt: Date,
-updatedAt: Date
-*/
-
-
-#[derive(serde::Serialize)]
-pub struct Message {
-    pub code: bool,
-    pub message: String,
-}
 
 #[derive(serde::Serialize)]
 pub struct Auth {
