@@ -1,6 +1,6 @@
 use std::vec;
 
-use crate::repository::base_repository::EntityRepository;
+use crate::repository::base_repository::{EntityRepository, QueryRepository};
 use crate::{db::db_methods::ExecuteResult, repository::base_repository::MutationRepository};
 use crate::error::app_error::AppError;
 use chrono::{DateTime, Utc};
@@ -45,6 +45,32 @@ impl<'a> UserRepository<'a> {
             values,
         ).await
     }
+
+    pub async fn get_user(
+        &self,
+        username: String,
+    ) -> Result<Option<User>, AppError>{
+        self.find_one(
+            "SELECT * FROM user WHERE username = ?", 
+            vec![JsonValue::String(username)]
+        ).await
+    }
+
+    pub async fn exists_email_username(
+        &self,
+        username: String,
+        email: String,
+    ) -> Result<bool, AppError> {
+        let values = vec![
+            JsonValue::String(username),
+            JsonValue::String(email),
+        ];
+
+        self.exists(
+            "SELECT 1 FROM user WHERE username = ? OR email = ? LIMIT 1",
+            values,
+        ).await
+    }
 }
 
 
@@ -54,15 +80,21 @@ impl<'a> MutationRepository for UserRepository<'a> {
     }
 }
 
-#[derive(sqlx::FromRow)]
+impl<'a> QueryRepository for UserRepository<'a> {
+    fn get_state(&self) -> &State<'_, DbStore> {
+        &self.state
+    }
+}
+
+#[derive(Debug, Clone, serde::Serialize, sqlx::FromRow)]
 pub struct User {
-    id: i64,
-    username: String,
-    email: String,
-    password_hash: String,
-    avatar_path: Option<String>,
-    created_at: DateTime<Utc>,
-    updated_at: DateTime<Utc>,
+    pub id: i64,
+    pub username: String,
+    pub email: String,
+    pub password: String,
+    pub avatar_path: Option<String>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 impl<'a> EntityRepository<User> for UserRepository<'a> {

@@ -4,7 +4,7 @@ import UserRepository from "@/lib/repository/user/UserRepository";
 import DisciplineService from "@/service/DisciplineService";
 import UserService from "@/service/UserService";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
-import {User} from '@/types/TypeInterface';
+import {User} from '@/types/models';
 import AuthStoreManager from "@/util/AuthStoreManager";
 import { invoke } from "@tauri-apps/api/core";
 
@@ -34,7 +34,7 @@ export function TauriProvider({ children }: { children: ReactNode }) {
       try {
         const authData = await AuthStoreManager.get();
         
-        if (!authData) {
+        if (!authData || !authData.user) {
           console.log('Nenhum dado no store foi encontrado');
           setUser(null);
           setLoading(false);

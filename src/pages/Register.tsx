@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Register() {
-  const { userService, invoke } = useTauri();
+  const { invoke } = useTauri();
 
   const navigate = useNavigate();
   const [username, setNome] = useState("");

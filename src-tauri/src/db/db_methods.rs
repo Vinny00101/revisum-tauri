@@ -60,6 +60,26 @@ pub async fn db_execute(
     }) 
 }
 
+
+pub async fn db_exists(
+    state: &State<'_, DbStore>,
+    query: &str,
+    values: Vec<JsonValue>,
+) -> Result<bool, AppError> {
+    let mut sql_query = sqlx::query(query);
+
+    for value in values{
+        sql_query = bind_value(sql_query, value);
+    }
+
+    let row = sql_query
+        .fetch_optional(&state.pool)
+        .await
+        .map_err(|e| AppError::DatabaseMethods(format!("Falha ao verificar existência: {}", e)))?;
+
+    Ok(row.is_some())
+}
+
 /*
 Select many (retorna Vec<T>)
 */

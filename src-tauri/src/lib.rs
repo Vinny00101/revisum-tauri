@@ -1,7 +1,7 @@
 use tauri::{Manager, async_runtime::block_on};
 
 use crate::db::{config::init_db, migration};
-use command::user_command::create_user_command;
+use command::user_command::{create_user_command, authentication_user_command};
 
 mod db;
 mod error;
@@ -33,7 +33,8 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             greet,
-            create_user_command
+            create_user_command,
+            authentication_user_command
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

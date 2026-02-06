@@ -30,4 +30,7 @@ thiserror = "1.0"
 tauri-plugin-store = "2"
 sha2 = "0.10"
 base64 = "0.22"
+argon2 = "0.5"
+password-hash = "0.5"
+rand = "0.8"
 chrono = { version = "0.4", features = ["serde"] }

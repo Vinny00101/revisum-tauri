@@ -23,7 +23,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="flex h-screen bg-gray-50 overflow-hidden overscroll-none">
       <Sidebar
         collapsed={sidebarCollapsed}
-        username={user?.name}
+        username={user?.username}
         email={user?.email}
         logout={handleLogout}
       />
@@ -32,7 +32,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <Navbar
           onMenuClick={() => setSidebarCollapsed(!sidebarCollapsed)}
           sidebarCollapsed={sidebarCollapsed}
-          username={user?.name}
+          username={user?.username}
         />
 
         <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
