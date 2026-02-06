@@ -10,3 +10,11 @@ pub struct Content{
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
+
+
+#[derive(Debug, Clone, sqlx::FromRow)]
+pub struct UpdateContent{
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub display_order: Option<i64>,
+}
