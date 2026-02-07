@@ -6,7 +6,7 @@ import { useToast } from "@/context/ToastContext";
 import { User } from "@/types/models";
 
 export default function Login() {
-  const { initialized, login, invoke } = useTauri();
+  const { login, invoke } = useTauri();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [senha, setSenha] = useState("");
@@ -17,7 +17,6 @@ export default function Login() {
 
 
   const handleLogin = async () => {
-    if (!initialized) return;
 
     setLoading(true);
     setMessage(null);

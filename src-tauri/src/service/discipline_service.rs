@@ -58,7 +58,7 @@ impl<'a> DisciplineService<'a> {
             });
         }
 
-        if !self
+        if self
             .discipline_repository
             .exists_name_discipline(user_id, name.clone())
             .await?

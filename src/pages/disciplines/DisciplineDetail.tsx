@@ -8,18 +8,20 @@ import { useSmartFilterSearch } from "@/components/tables/hooks/useBarTools";
 import { useTauri } from "@/context/TauriContext";
 import { useToast } from "@/context/ToastContext";
 import { mapDisciplineToResponse } from "@/service/mappers/DisciplineMapper";
-import { DisciplineResponse } from "@/types/TypeInterface";
+import { DisciplineResponse, message } from "@/types/TypeInterface";
 import { number } from "framer-motion";
 import { BarChart3, BookOpen, Calendar, FileText, Filter, Plus, Search, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ContentResponse } from "@/types/TypeInterface";
 import { contentFilters, contentSearch } from "@/components/content/contentTool";
+import { DisciplineRes } from "@/types/models";
+import AuthStoreManager from "@/util/AuthStoreManager";
 
 export default function DisciplineDetail() {
     const navigate = useNavigate();
     const { showToast } = useToast();
-    const { discService } = useTauri();
+    const { invoke } = useTauri();
     const { id } = useParams();
     const [discipline, setDiscipline] = useState<DisciplineResponse>();
     const [contents, setContents] = useState<ContentResponse[]>([]);
@@ -31,6 +33,7 @@ export default function DisciplineDetail() {
 
     const getDiscipline = async () => {
         try {
+            console.log("ID recebido para detalhes da disciplina:", id);
             if (!id) {
                 showToast({
                     type: "error",
@@ -40,9 +43,15 @@ export default function DisciplineDetail() {
                 return;
             }
             const id_number = number.parse(id);
-            const discipline = await discService.getDiscipline(id_number);
+            //const discipline = await discService.getDiscipline(id_number);
+            const authData = await AuthStoreManager.get();
+            const discipline = await invoke<{ message: message; discipline: DisciplineRes | null }>("get_discipline_command", {
+                user_id: authData?.user.id,
+                discipline_id: id_number
+            });
+            console.log("Disciplina detalhada:", discipline);
 
-            if (!discipline.listDisc) {
+            if (!discipline.discipline) {
                 showToast({
                     type: "error",
                     message: "Não existe uma disciplina com esse identificador único.",
@@ -51,8 +60,8 @@ export default function DisciplineDetail() {
                 return;
             }
 
-            setDiscipline(mapDisciplineToResponse(discipline.listDisc));
-        } catch {
+            setDiscipline(mapDisciplineToResponse(discipline.discipline!));
+        } catch (err: any) {
             navigate("/disciplines");
             showToast({
                 type: "error",

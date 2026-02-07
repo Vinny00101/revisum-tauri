@@ -18,6 +18,7 @@ mod error;
 mod model;
 mod repository;
 mod service;
+mod utils;
 
 #[tauri::command]
 fn greet(name: &str) -> String {

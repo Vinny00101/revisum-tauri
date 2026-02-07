@@ -1,8 +1,8 @@
-import Discipline from "@/lib/models/Discipline";
+import { DisciplineRes } from "@/types/models";
 import { DisciplineResponse } from "@/types/TypeInterface";
 
 export function mapDisciplineToResponse(
-    discipline: Discipline
+    discipline: DisciplineRes
 ): DisciplineResponse {
 
     return {
@@ -15,6 +15,6 @@ export function mapDisciplineToResponse(
         progress: 0,
         lastStudied: null,
         favorite: false,
-        createdAt: new Date(discipline.createdAt).toISOString(),
+        createdAt: discipline.createdAt,
     };
 }

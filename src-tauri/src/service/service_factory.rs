@@ -5,7 +5,7 @@ use crate::{db::config::DbStore, repository::{discipline_repository::DisciplineR
 pub struct ServiceFactory;
 
 impl ServiceFactory {
-    pub fn discipline(state: State<'_, DbStore>) -> DisciplineService {
+    pub fn discipline<'a>(state: State<'a, DbStore>) -> DisciplineService<'a> {
         DisciplineService::new(
             DisciplineRepository::new(state.clone()),
             UserRepository::new(state),
