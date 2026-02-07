@@ -1,1 +1,0 @@
-export type RowMapper<T> = (row: any) => T;

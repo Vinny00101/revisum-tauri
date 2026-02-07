@@ -2,7 +2,7 @@
 name = "revisum"
 version = "0.1.0"
 description = "A Tauri App"
-authors = ["you"]
+authors = ["Vinicius"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -23,5 +23,14 @@ tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tauri-plugin-sql = { version = "2", features = ["sqlite"] }
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "migrate", "chrono"] }
+tokio = { version = "1", features = ["full"] }
+async-trait = "0.1"
+thiserror = "1.0"
 tauri-plugin-store = "2"
-
+sha2 = "0.10"
+base64 = "0.22"
+argon2 = "0.5"
+password-hash = "0.5"
+rand = "0.8"
+chrono = { version = "0.4", features = ["serde"] }

@@ -4,14 +4,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTauri } from "@/context/TauriContext";
 import { useToast } from "@/context/ToastContext";
 import { CreateDisciplineModalProps, DisciplineFormData } from "@/types/TypeInterface";
+import AuthStoreManager from "@/util/AuthStoreManager";
 
 export default function CreateDisciplineModal({
     isOpen,
     onClose,
     reloadTable
 }: CreateDisciplineModalProps) {
+    const { invoke } = useTauri();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const {discService} = useTauri();
     const [formData, setFormData] = useState<DisciplineFormData>({
         name: "",
         description: "",
@@ -24,7 +25,14 @@ export default function CreateDisciplineModal({
 
         setIsSubmitting(true);
         try {
-            const message = await discService.createDisciplineService(formData.name, formData.description);
+            const authData = await AuthStoreManager.get();
+            const message = await invoke<{ code: number; message: string }>("create_discipline_command", {
+                user_id: authData?.user.id,
+                name: formData.name,
+                description: formData.description,
+            });
+            console.log("Resposta da criação de disciplina:", message);
+            //const message = await discService.createDisciplineService(formData.name, formData.description);
             if(!message.code){
                 showToast({type: "error", message: message.message});
             }else{

@@ -1,17 +1,11 @@
-import { connectiondatabase } from "@/lib/db";
-import DisciplineRepository from "@/lib/repository/discipline/DisciplineRepository";
-import UserRepository from "@/lib/repository/user/UserRepository";
-import DisciplineService from "@/service/DisciplineService";
-import UserService from "@/service/UserService";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
-import {User} from '@/types/TypeInterface';
+import {User} from '@/types/models';
 import AuthStoreManager from "@/util/AuthStoreManager";
+import { invoke } from "@tauri-apps/api/core";
 
 interface TauriContextType {
+  invoke: typeof invoke;
   user: User | null;
-  userService: UserService;
-  discService: DisciplineService;
-  initialized: boolean;
   loading: boolean; // Adiciona estado de loading
   login: (userData: User) => void;
   logout: () => void;
@@ -21,10 +15,7 @@ interface TauriContextType {
 const TauriContext = createContext<TauriContextType | undefined>(undefined);
 
 export function TauriProvider({ children }: { children: ReactNode }) {
-  const [initialized, setInitialized] = useState(false);
   const [loading, setLoading] = useState(true); // Para controlar carregamento
-  const [userService, setUserService] = useState<UserService | null>(null);
-  const [discService, setDiscService] = useState<DisciplineService | null>(null);
   const [user, setUser] = useState<User | null>(null);
   
   useEffect(() => {
@@ -32,7 +23,7 @@ export function TauriProvider({ children }: { children: ReactNode }) {
       try {
         const authData = await AuthStoreManager.get();
         
-        if (!authData) {
+        if (!authData || !authData.user) {
           console.log('Nenhum dado no store foi encontrado');
           setUser(null);
           setLoading(false);
@@ -52,28 +43,6 @@ export function TauriProvider({ children }: { children: ReactNode }) {
     checkAuthCookie();
   }, []);
 
-  useEffect(() => {
-    async function init() {
-      try {
-        await connectiondatabase.init();
-        const db = await connectiondatabase.get();
-        const userRepository = new UserRepository(db);
-        const disciplineRepository = new DisciplineRepository(db);
-        const userService = new UserService(userRepository);
-        const disciplineService = new DisciplineService(disciplineRepository, userRepository);
-
-        setUserService(userService);
-        setDiscService(disciplineService);
-        setInitialized(true);
-        console.log("Banco e serviços inicializados");
-      } catch (err) {
-        console.error("Erro ao inicializar banco:", err);
-      }
-    }
-
-    init();
-  }, []);
-
   const login = (userData: User) => {
     setUser(userData);
     AuthStoreManager.set(userData, 10);
@@ -88,7 +57,7 @@ export function TauriProvider({ children }: { children: ReactNode }) {
 
   const isAuthenticated = !!user;
 
-  if (loading || !initialized || !userService || !discService) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -101,10 +70,8 @@ export function TauriProvider({ children }: { children: ReactNode }) {
 
   return (
     <TauriContext.Provider value={{
+      invoke,
       user,
-      userService: userService!,
-      discService: discService!,
-      initialized,
       loading,
       login,
       logout,

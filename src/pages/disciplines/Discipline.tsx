@@ -8,25 +8,32 @@ import CreateDisciplineModal from "./CreateDisciplinesModal";
 import { useTauri } from "@/context/TauriContext";
 import { useToast } from "@/context/ToastContext";
 import { mapDisciplineToResponse } from "@/service/mappers/DisciplineMapper";
-import { DisciplineResponse } from "@/types/TypeInterface";
+import { DisciplineResponse, message } from "@/types/TypeInterface";
 import { DataTable } from "@/components/tables/DataTables";
 import { disciplineColumns } from "@/components/discipline/disciplinesColumns";
 import { disciplineFilters, disciplineSearch } from "@/components/discipline/disciplineTool";
 import { useSmartFilterSearch } from "@/components/tables/hooks/useBarTools";
+import { DisciplineRes } from "@/types/models";
+import AuthStoreManager from "@/util/AuthStoreManager";
 
 export default function Discipline() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [disciplines, setDisciplines] = useState<DisciplineResponse[]>([]);
     const { showToast } = useToast();
-    const { discService } = useTauri();
+    const { invoke} = useTauri();
     const {filter, search, setFilter, setSearch, processedData} =  useSmartFilterSearch(disciplines, disciplineFilters, "all", disciplineSearch);
 
     const getAllDiscipline = async () => {
 
         try {
-            const result = await discService.getAllDiscipline();
-            if (result.message.code && result.listDisc) {
-                const adapted = result.listDisc.map(mapDisciplineToResponse);
+
+            const authData = await AuthStoreManager.get();
+            const result = await invoke<{ message: message; discipline: DisciplineRes[] | null }>("get_all_discipline_command",{
+                user_id: authData?.user.id
+            });
+            console.log("Resultado da busca de disciplinas:", result);
+            if (result.message.code && result.discipline) {
+                const adapted = result.discipline.map(mapDisciplineToResponse);
                 setDisciplines(adapted);
 
             } else {
