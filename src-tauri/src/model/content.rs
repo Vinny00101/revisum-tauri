@@ -18,3 +18,9 @@ pub struct UpdateContent{
     pub description: Option<String>,
     pub display_order: Option<i64>,
 }
+
+impl UpdateContent {
+    pub fn new(title: Option<String>, description: Option<String>, display_order: Option<i64>) -> Self {
+        Self { title, description, display_order }
+    }
+}

@@ -142,8 +142,9 @@ where
     }
 }
 
-
+/*
 pub async fn db_close(state: &State<'_, DbStore>) -> Result<(), AppError> {
     let _ = state.pool.close().await;
     Ok(())
 }
+ */

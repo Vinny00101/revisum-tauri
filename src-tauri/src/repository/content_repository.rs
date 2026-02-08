@@ -8,6 +8,9 @@ pub(crate) struct ContentRepository<'a>{
 } 
 
 impl<'a> ContentRepository<'a> {
+    pub fn new(state: State<'a, DbStore>) -> Self {
+        Self { state }
+    }
 
     pub async fn create_content(
         &self,
