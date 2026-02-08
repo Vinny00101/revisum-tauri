@@ -1,4 +1,4 @@
-use chrono::{DateTime, SecondsFormat, Utc};
+use chrono::{DateTime, Utc};
 
 use crate::model::discipline::Discipline;
 #[derive(serde::Serialize)]

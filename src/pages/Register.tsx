@@ -1,11 +1,10 @@
 import AnimatedMessage from "@/components/animation/message";
-import { useTauri } from "@/context/TauriContext";
 import { useToast } from "@/context/ToastContext";
+import { registerUser } from "@/tauri/user";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Register() {
-  const { invoke } = useTauri();
 
   const navigate = useNavigate();
   const [username, setNome] = useState("");
@@ -19,10 +18,7 @@ export default function Register() {
     setMessage(null);
 
     try {
-      const result = await invoke<{ code: number; message: string }>(
-        "create_user_command",{username: username, password: password, email: email}
-      )
-      //const result = await userService.createUserService(nome, password, email);
+      const result = await registerUser(username, password, email);
 
       if (!result.code) {
         showToast({ type: "error", message: result.message });

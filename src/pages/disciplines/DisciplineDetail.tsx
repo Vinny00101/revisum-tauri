@@ -5,35 +5,55 @@ import ProgressBar from "@/components/discipline/Progress";
 import StatusBadge from "@/components/discipline/StatusBadge";
 import { DataTable } from "@/components/tables/DataTables";
 import { useSmartFilterSearch } from "@/components/tables/hooks/useBarTools";
-import { useTauri } from "@/context/TauriContext";
 import { useToast } from "@/context/ToastContext";
 import { mapDisciplineToResponse } from "@/service/mappers/DisciplineMapper";
-import { DisciplineResponse, message } from "@/types/TypeInterface";
+import { DisciplineResponse } from "@/types/TypeInterface";
 import { number } from "framer-motion";
 import { BarChart3, BookOpen, Calendar, FileText, Filter, Plus, Search, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ContentResponse } from "@/types/TypeInterface";
 import { contentFilters, contentSearch } from "@/components/content/contentTool";
-import { DisciplineRes } from "@/types/models";
-import AuthStoreManager from "@/util/AuthStoreManager";
+import { get_discipline } from "@/tauri/discipline";
+import { DisciplineAction } from "@/types/types";
+import ModalDisciplina from "./ModalDiscipline";
 
 export default function DisciplineDetail() {
     const navigate = useNavigate();
     const { showToast } = useToast();
-    const { invoke } = useTauri();
     const { id } = useParams();
     const [discipline, setDiscipline] = useState<DisciplineResponse>();
     const [contents, setContents] = useState<ContentResponse[]>([]);
-    // precisa ser implementado algumas coisas que estão aqui em baixo, e uma refatoracção do codigo de disciplina.
-    const [loading, setLoading] = useState(true);
     const [isCreateItemModalOpen, setIsCreateItemModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const { filter, search, setFilter, setSearch, processedData } = useSmartFilterSearch(contents, contentFilters, "all", contentSearch);
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
 
+    const handleDisciplineAction = (action: DisciplineAction, id: number) => {
+        switch (action) {
+            case "study":
+                navigate(`/study/session?discipline=${id}`);
+                break;
+
+            case "edit":
+                setIsEditModalOpen(true);
+                break;
+
+            case "delete":
+                //
+                break;
+
+            case "export":
+                break;
+
+            case "toggle_favorite":
+                break;
+        }
+    };
+
+
     const getDiscipline = async () => {
         try {
-            console.log("ID recebido para detalhes da disciplina:", id);
             if (!id) {
                 showToast({
                     type: "error",
@@ -43,13 +63,7 @@ export default function DisciplineDetail() {
                 return;
             }
             const id_number = number.parse(id);
-            //const discipline = await discService.getDiscipline(id_number);
-            const authData = await AuthStoreManager.get();
-            const discipline = await invoke<{ message: message; discipline: DisciplineRes | null }>("get_discipline_command", {
-                user_id: authData?.user.id,
-                discipline_id: id_number
-            });
-            console.log("Disciplina detalhada:", discipline);
+            const discipline = await get_discipline(id_number);
 
             if (!discipline.discipline) {
                 showToast({
@@ -73,32 +87,6 @@ export default function DisciplineDetail() {
     useEffect(() => {
         getDiscipline();
     }, []);
-
-    const handleToggleFavorite = async () => {
-        if (!discipline) return;
-
-        try {
-            // em breve.
-
-            /*
-            if (result.message.code) {
-                setDiscipline({
-                    ...discipline,
-                    favorite: !discipline.favorite
-                });
-                showToast({
-                    type: "success",
-                    message: discipline.favorite 
-                        ? "Removida dos favoritos" 
-                        : "Adicionada aos favoritos"
-                });
-            }
-            */
-            showToast({ type: "info", message: "Favorito em desenvolvimento" });
-        } catch (err) {
-            showToast({ type: "error", message: "Erro ao atualizar favorito" });
-        }
-    };
 
     if (!discipline) {
         return (
@@ -156,7 +144,7 @@ export default function DisciplineDetail() {
                                         <ActionButtons
                                             disciplineId={discipline.id}
                                             isFavorite={discipline.favorite}
-                                            onToggleFavorite={handleToggleFavorite}
+                                            onAction={handleDisciplineAction}
                                         />
                                     </div>
                                 </div>
@@ -264,10 +252,10 @@ export default function DisciplineDetail() {
                             </div>
 
                             <div className="flex gap-3">
-                                <select 
-                                value={filter}
-                                onChange={(e) => setFilter(e.target.value as any)}
-                                className="px-4 py-2.5 model-input"
+                                <select
+                                    value={filter}
+                                    onChange={(e) => setFilter(e.target.value as any)}
+                                    className="px-4 py-2.5 model-input"
                                 >
                                     {contentFilters.map((filterOption) => (
                                         <option key={filterOption.key} value={filterOption.key}>
@@ -347,6 +335,12 @@ export default function DisciplineDetail() {
                     </div>
                 </div>
             </div>
+            <ModalDisciplina
+                title="Editar disciplina"
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                reloadTable={getDiscipline}
+            />
         </div>
     );
 }

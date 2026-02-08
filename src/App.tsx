@@ -8,9 +8,9 @@ function App() {
   return (
     <TauriProvider>
       <ToastProvider>
-        <AppLayout>
-          <AppRoutes/>
-        </AppLayout>
+          <AppLayout>
+            <AppRoutes />
+          </AppLayout>
       </ToastProvider>
     </TauriProvider>
   )

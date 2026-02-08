@@ -1,4 +1,3 @@
-use serde::de::value;
 use tauri::State;
 
 use crate::{db::{config::DbStore, db_methods::ExecuteResult}, error::app_error::AppError, model::discipline::{Discipline, UpdateDiscipline}, repository::base_repository::{EntityRepository, MutationRepository, QueryRepository}};

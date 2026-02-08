@@ -1,3 +1,4 @@
+import { MessageType } from "@/types/types";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, CircleX, Info, TriangleAlert } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -33,7 +34,7 @@ export default function AnimatedMessage({
   duration = 3000,
 }: AnimatedMessageProps) {
   const [show, setShow] = useState(false);
-
+  console.log("AnimatedMessage received message:", message);
   useEffect(() => {
     if (!message) return;
 
@@ -57,7 +58,7 @@ export default function AnimatedMessage({
       {show && (
         <motion.div
           className={`
-            fixed top-4 right-4 z-50
+            fixed top-4 right-4 z-80
             flex items-start gap-3
             max-w-sm w-full
             border rounded-xl px-4 py-3 shadow-md

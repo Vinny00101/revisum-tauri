@@ -8,7 +8,9 @@ export interface Column<T> {
 }
 
 export interface CreateDisciplineModalProps {
-    isOpen: boolean,
+    id?: number;
+    title: string;
+    isOpen: boolean;
     onClose: () => void;
     reloadTable: () => void;
 }

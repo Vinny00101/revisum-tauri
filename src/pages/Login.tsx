@@ -3,10 +3,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AnimatedMessage from "@/components/animation/message";
 import { useToast } from "@/context/ToastContext";
-import { User } from "@/types/models";
+import { authenticateUser } from "@/tauri/user";
 
 export default function Login() {
-  const { login, invoke } = useTauri();
+  const { login } = useTauri();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [senha, setSenha] = useState("");
@@ -22,13 +22,8 @@ export default function Login() {
     setMessage(null);
 
     try {
-      const result = await invoke<{ code: number; message: string; user: User | null }>(
-        "authentication_user_command", { username: username, password: senha }
-      );
-      console.log(result);
-      //const result = await userService.authenticationUser(username, senha);
-    
-
+      const result = await authenticateUser(username, senha);
+  
       if (!result.code || !result.user) {
         showToast({type: "error", message: result.message});
       } else {

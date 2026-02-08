@@ -4,6 +4,8 @@ import { NavLink } from "react-router-dom";
 import ProgressBar from "./Progress";
 import StatusBadge from "./StatusBadge";
 import ActionButtons from "./ActionButtons";
+import { hadleDisciplinas } from "@/util/discipline";
+
 
 export const disciplineColumns: Column<DisciplineResponse>[] = [
   {
@@ -97,6 +99,7 @@ export const disciplineColumns: Column<DisciplineResponse>[] = [
       <ActionButtons
         disciplineId={d.id}
         isFavorite={d.favorite}
+        onAction={hadleDisciplinas}
       />
     )
   }

@@ -8,7 +8,7 @@ export interface User {
 }
 
 
-export interface DisciplineRes {
+export interface Discipline {
     id: number,
     userId: number,
     name: string,

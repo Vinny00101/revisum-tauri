@@ -1,3 +1,4 @@
+import { MessageType } from "@/types/types";
 import { createContext, useContext, useState } from "react";
 
 interface Toast {

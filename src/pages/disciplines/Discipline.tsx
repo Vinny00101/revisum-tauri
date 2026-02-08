@@ -1,37 +1,30 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
     Filter,
     Plus,
     Search,
 } from "lucide-react";
-import CreateDisciplineModal from "./CreateDisciplinesModal";
-import { useTauri } from "@/context/TauriContext";
 import { useToast } from "@/context/ToastContext";
 import { mapDisciplineToResponse } from "@/service/mappers/DisciplineMapper";
-import { DisciplineResponse, message } from "@/types/TypeInterface";
+import { DisciplineResponse } from "@/types/TypeInterface";
 import { DataTable } from "@/components/tables/DataTables";
 import { disciplineColumns } from "@/components/discipline/disciplinesColumns";
 import { disciplineFilters, disciplineSearch } from "@/components/discipline/disciplineTool";
 import { useSmartFilterSearch } from "@/components/tables/hooks/useBarTools";
-import { DisciplineRes } from "@/types/models";
-import AuthStoreManager from "@/util/AuthStoreManager";
+import { get_all_discipline } from "@/tauri/discipline";
+import ModalDisciplina from "./ModalDiscipline";
+import { eventBus } from "@/util/Event";
 
 export default function Discipline() {
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [disciplines, setDisciplines] = useState<DisciplineResponse[]>([]);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const { showToast } = useToast();
-    const { invoke} = useTauri();
-    const {filter, search, setFilter, setSearch, processedData} =  useSmartFilterSearch(disciplines, disciplineFilters, "all", disciplineSearch);
+    const { filter, search, setFilter, setSearch, processedData } = useSmartFilterSearch(disciplines, disciplineFilters, "all", disciplineSearch);
 
-    const getAllDiscipline = async () => {
+    const getAllDiscipline = useCallback(async () => {
 
         try {
-
-            const authData = await AuthStoreManager.get();
-            const result = await invoke<{ message: message; discipline: DisciplineRes[] | null }>("get_all_discipline_command",{
-                user_id: authData?.user.id
-            });
-            console.log("Resultado da busca de disciplinas:", result);
+            const result = await get_all_discipline();
             if (result.message.code && result.discipline) {
                 const adapted = result.discipline.map(mapDisciplineToResponse);
                 setDisciplines(adapted);
@@ -44,11 +37,16 @@ export default function Discipline() {
             showToast({ type: "error", message: "Erro inesperado ao buscar disciplinas." });
             console.error("Discipline error:", err);
         }
-    }
+    },[showToast]);
 
     useEffect(() => {
         getAllDiscipline();
-    }, []);
+        eventBus.on("discipline:updated", getAllDiscipline);
+
+        return () => {
+            eventBus.off("discipline:updated", getAllDiscipline);
+        }
+    }, [getAllDiscipline]);
 
     return (
         <div className="p-6">
@@ -119,7 +117,8 @@ export default function Discipline() {
                 pageSize={5}
             />
 
-            <CreateDisciplineModal
+            <ModalDisciplina
+                title="Nova Disciplina"
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
                 reloadTable={getAllDiscipline}

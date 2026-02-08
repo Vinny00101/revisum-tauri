@@ -1,56 +1,31 @@
-import { useToast } from "@/context/ToastContext";
+import ModalDisciplina from "@/pages/disciplines/ModalDiscipline";
+import { DisciplineAction } from "@/types/types";
+import { eventBus } from "@/util/Event";
 import { Edit, Play, MoreVertical, Trash2, Download, Star } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 interface ActionButtonsProps {
     disciplineId: number;
     isFavorite?: boolean;
-    onToggleFavorite?: () => void;
+    onAction: (action: DisciplineAction, disciplineId: number) => void;
 }
 
 export default function ActionButtons({
     disciplineId,
     isFavorite = false,
-    onToggleFavorite
+    onAction
 }: ActionButtonsProps) {
-    const navigate = useNavigate();
-    const {showToast} = useToast();
     const [showDropdown, setShowDropdown] = useState(false);
-
-    const handleStudy = () => {
-        navigate(`/study/session?discipline=${disciplineId}`);
-    };
-
-    const handleEdit = () => {
-        navigate(`/disciplines/${disciplineId}/edit`);
-    };
-
-    const handleDelete = async () => {
-        try {
-            //const result = await discService.deleteDiscipline(parseInt(id!));
-            /*
-            if (result.message.code) {
-                showToast({ type: "success", message: "Disciplina excluída com sucesso" });
-                navigate("/disciplines");
-            }
-                */
-            showToast({ type: "info", message: "Deletar em desenvolvimento" });
-        } catch (err) {
-            showToast({ type: "error", message: "Erro ao excluir disciplina" });
-        }
-    };
-
-    const handleExport = () => {
-        // Implementar lógica de exportação
-        showToast({ type: "info", message: "Exportação em desenvolvimento" });
-    };
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
     return (
         <div className="flex items-center gap-2">
             {/* Botão de Estudar */}
             <button
-                onClick={handleStudy}
+                onClick={
+                    () => onAction("study", disciplineId)
+                }
                 className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
                 title="Estudar"
             >
@@ -59,26 +34,24 @@ export default function ActionButtons({
 
             {/* Botão de Editar */}
             <button
-                onClick={handleEdit}
+                onClick={isCreateModalOpen ? () => setIsCreateModalOpen(false) : () => setIsCreateModalOpen(true)}
                 className="p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
                 title="Editar"
             >
                 <Edit size={18} />
             </button>
 
-            {/* Botão de Favorito */}
-            {onToggleFavorite && (
-                <button
-                    onClick={onToggleFavorite}
-                    className={`p-2 rounded-lg transition-colors ${isFavorite
-                        ? "bg-yellow-50 text-yellow-600 hover:bg-yellow-100"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
-                    title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-                >
-                    <Star size={18} className={isFavorite ? "fill-yellow-400" : ""} />
-                </button>
-            )}
+            <button
+                onClick={
+                    () => onAction("toggle_favorite", disciplineId)}
+                className={`p-2 rounded-lg transition-colors ${isFavorite
+                    ? "bg-yellow-50 text-yellow-600 hover:bg-yellow-100"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+            >
+                <Star size={18} className={isFavorite ? "fill-yellow-400" : ""} />
+            </button>
 
             {/* Dropdown de Mais Opções */}
             <div className="relative">
@@ -98,35 +71,50 @@ export default function ActionButtons({
                         />
                         <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                             <div className="py-1">
-                                {handleExport && (
-                                    <button
-                                        onClick={() => {
-                                            handleExport();
-                                            setShowDropdown(false);
-                                        }}
-                                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                    >
-                                        <Download size={16} />
-                                        Exportar dados
-                                    </button>
-                                )}
-                                {handleDelete && (
-                                    <button
-                                        onClick={() => {
-                                            handleDelete();
-                                            setShowDropdown(false);
-                                        }}
-                                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                                    >
-                                        <Trash2 size={16} />
-                                        Excluir disciplina
-                                    </button>
-                                )}
+
+                                <button
+                                    onClick={() => {
+                                        onAction("export", disciplineId);
+                                        setShowDropdown(false);
+                                    }}
+                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                >
+                                    <Download size={16} />
+                                    Exportar dados
+                                </button>
+
+
+                                <button
+                                    onClick={() => {
+                                        onAction("delete", disciplineId);
+                                        setIsDeleteModalOpen(true);
+                                        setShowDropdown(false);
+                                    }}
+                                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                >
+                                    <Trash2 size={16} />
+                                    Excluir disciplina
+                                </button>
+
                             </div>
                         </div>
                     </>
                 )}
             </div>
+            <ModalDisciplina
+                id={disciplineId}
+                title="Editar Disciplina"
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                reloadTable={() => eventBus.emit("discipline:updated")}
+            />
+            <ModalDisciplina
+                id={disciplineId}
+                title="Excluir Disciplina"
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                reloadTable={() => eventBus.emit("discipline:updated")}
+            />
         </div>
     );
 }
