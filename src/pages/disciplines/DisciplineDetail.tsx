@@ -17,6 +17,7 @@ import { contentFilters, contentSearch } from "@/components/content/contentTool"
 import { get_discipline } from "@/tauri/discipline";
 import { DisciplineAction } from "@/types/types";
 import ModalDisciplina from "./ModalDiscipline";
+import ModalContent from "../content/ModalContent";
 
 export default function DisciplineDetail() {
     const navigate = useNavigate();
@@ -24,8 +25,9 @@ export default function DisciplineDetail() {
     const { id } = useParams();
     const [discipline, setDiscipline] = useState<DisciplineResponse>();
     const [contents, setContents] = useState<ContentResponse[]>([]);
-    const [isCreateItemModalOpen, setIsCreateItemModalOpen] = useState(false);
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isCreateContentModalOpen, setIsCreateContentModalOpen] = useState(false);
+    const [isTitle, setIsTitle] = useState("");
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const { filter, search, setFilter, setSearch, processedData } = useSmartFilterSearch(contents, contentFilters, "all", contentSearch);
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
 
@@ -36,13 +38,14 @@ export default function DisciplineDetail() {
                 break;
 
             case "edit":
-                setIsEditModalOpen(true);
+                setIsTitle("Editar Disciplina");
+                setIsModalOpen(true);
                 break;
 
             case "delete":
-                //
+                setIsTitle("Excluir Disciplina");
+                setIsModalOpen(true);
                 break;
-
             case "export":
                 break;
 
@@ -83,6 +86,10 @@ export default function DisciplineDetail() {
             });
         }
     };
+
+    const getContents = async () => {
+        //
+    }
 
     useEffect(() => {
         getDiscipline();
@@ -227,7 +234,7 @@ export default function DisciplineDetail() {
                                 )}
 
                                 <button
-                                    onClick={() => setIsCreateItemModalOpen(true)}
+                                    onClick={() => setIsCreateContentModalOpen(true)}
                                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
                                 >
                                     <Plus size={20} />
@@ -336,10 +343,18 @@ export default function DisciplineDetail() {
                 </div>
             </div>
             <ModalDisciplina
-                title="Editar disciplina"
-                isOpen={isEditModalOpen}
-                onClose={() => setIsEditModalOpen(false)}
+                title={isTitle}
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
                 reloadTable={getDiscipline}
+            />
+
+            <ModalContent
+                disciplineId={number.parse(id!)}
+                title="Criar conteúdo"
+                isOpen={isCreateContentModalOpen}
+                onClose={() => setIsCreateContentModalOpen(false)}
+                reloadTable={getContents}
             />
         </div>
     );

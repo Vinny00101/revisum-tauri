@@ -5,7 +5,6 @@ import { TableBody } from "./TableBody";
 import { useTablePagination } from "./hooks/useTablePagination";
 import { TableFooter } from "./Tablefooter";
 import { TableEmpty } from "./TableEmpty";
-import CreateDisciplineModal from "@/pages/disciplines/ModalDiscipline";
 
 interface Props<T> {
     data: T[];

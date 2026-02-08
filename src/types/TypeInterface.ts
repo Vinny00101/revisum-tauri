@@ -45,6 +45,21 @@ export interface DisciplineFormData {
   description: string;
 }
 
+export interface ContentFormData {
+  title: string;
+  description: string;
+  display_order: number;
+}
+
+export interface CreateContentModalProps {
+  id?: number;
+  disciplineId: number;
+  title: string;
+  isOpen: boolean;
+  onClose: () => void;
+  reloadTable: () => void;
+}
+
 export interface message {
     code: boolean,
     message: string
