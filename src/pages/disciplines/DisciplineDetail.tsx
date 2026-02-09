@@ -15,9 +15,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ContentResponse } from "@/types/TypeInterface";
 import { contentFilters, contentSearch } from "@/components/content/contentTool";
 import { get_discipline } from "@/tauri/discipline";
-import { DisciplineAction } from "@/types/types";
 import ModalDisciplina from "./ModalDiscipline";
 import ModalContent from "../content/ModalContent";
+import { mapContentToResponse } from "@/service/mappers/ContentMapper";
+import { get_all_content } from "@/tauri/content";
 
 export default function DisciplineDetail() {
     const navigate = useNavigate();
@@ -26,33 +27,9 @@ export default function DisciplineDetail() {
     const [discipline, setDiscipline] = useState<DisciplineResponse>();
     const [contents, setContents] = useState<ContentResponse[]>([]);
     const [isCreateContentModalOpen, setIsCreateContentModalOpen] = useState(false);
-    const [isTitle, setIsTitle] = useState("");
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const { filter, search, setFilter, setSearch, processedData } = useSmartFilterSearch(contents, contentFilters, "all", contentSearch);
-    const [selectedItems, setSelectedItems] = useState<number[]>([]);
-
-    const handleDisciplineAction = (action: DisciplineAction, id: number) => {
-        switch (action) {
-            case "study":
-                navigate(`/study/session?discipline=${id}`);
-                break;
-
-            case "edit":
-                setIsTitle("Editar Disciplina");
-                setIsModalOpen(true);
-                break;
-
-            case "delete":
-                setIsTitle("Excluir Disciplina");
-                setIsModalOpen(true);
-                break;
-            case "export":
-                break;
-
-            case "toggle_favorite":
-                break;
-        }
-    };
+    const [editId, setEditId] = useState<number | null>(null);
+    const [deleteId, setDeleteId] = useState<number | null>(null);
 
 
     const getDiscipline = async () => {
@@ -77,6 +54,8 @@ export default function DisciplineDetail() {
                 return;
             }
 
+            getContents(id_number);
+
             setDiscipline(mapDisciplineToResponse(discipline.discipline!));
         } catch (err: any) {
             navigate("/disciplines");
@@ -87,8 +66,24 @@ export default function DisciplineDetail() {
         }
     };
 
-    const getContents = async () => {
-        //
+    const getContents = async (id_number: number) => {
+        try {
+            const result = await get_all_content(id_number);
+            if (!result.message.code || !result.content) {
+                showToast({
+                    type: "error",
+                    message: result.message.message
+                })
+            } else {
+                const adapted = result.content.map(mapContentToResponse);
+                setContents(adapted);
+            }
+        } catch (err: any) {
+            showToast({
+                type: "error",
+                message: "Erro no rust",
+            });
+        }
     }
 
     useEffect(() => {
@@ -151,8 +146,27 @@ export default function DisciplineDetail() {
                                         <ActionButtons
                                             disciplineId={discipline.id}
                                             isFavorite={discipline.favorite}
-                                            onAction={handleDisciplineAction}
-                                        />
+                                            onAction={(action, id) => {
+                                                if (action === "edit") setEditId(id);
+                                                if (action === "delete") setDeleteId(id);
+                                            }}
+                                        >
+                                            <ModalDisciplina
+                                                id={editId ?? undefined}
+                                                title="Editar Disciplina"
+                                                isOpen={editId === discipline.id}
+                                                onClose={() => setEditId(null)}
+                                                reloadTable={getDiscipline}
+                                            />
+
+                                            <ModalDisciplina
+                                                id={deleteId ?? undefined}
+                                                title="Excluir Disciplina"
+                                                isOpen={deleteId === discipline.id}
+                                                onClose={() => setDeleteId(null)}
+                                                reloadTable={getDiscipline}
+                                            />
+                                        </ActionButtons>
                                     </div>
                                 </div>
                                 {/* Estatísticas Rápidas, Barra de Progresso, Botões de Ação */}
@@ -206,19 +220,21 @@ export default function DisciplineDetail() {
                     </div>
                 </div>
                 {/* Seção de Itens */}
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-                    <div className="p-6 border-b border-gray-200">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h2 className="text-lg font-semibold text-gray-800">
-                                    Conteúdos da Disciplina
-                                </h2>
-                                <p className="text-sm text-gray-500 mt-1">
-                                    Gerencie os conteúdos desta disciplina.
-                                </p>
-                            </div>
+                <div className="space-y-6">
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                        <div className="p-6 border-b border-gray-200">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-lg font-semibold text-gray-800">
+                                        Conteúdos da Disciplina
+                                    </h2>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        Gerencie os conteúdos desta disciplina.
+                                    </p>
+                                </div>
 
-                            <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-3">
+                                    {/*
                                 {selectedItems.length > 0 && (
                                     <div className="flex items-center gap-2 mr-4">
                                         <span className="text-sm text-gray-600">
@@ -233,48 +249,51 @@ export default function DisciplineDetail() {
                                     </div>
                                 )}
 
-                                <button
-                                    onClick={() => setIsCreateContentModalOpen(true)}
-                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
-                                >
-                                    <Plus size={20} />
-                                    Novo conteúdo
-                                </button>
+                                */}
+
+                                    <button
+                                        onClick={() => setIsCreateContentModalOpen(true)}
+                                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
+                                    >
+                                        <Plus size={20} />
+                                        Novo conteúdo
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Ferramentas de Filtro e Busca */}
-                    <div className="p-4 border-b border-gray-200 bg-gray-50">
-                        <div className="flex flex-col md:flex-row gap-4">
-                            <div className="flex-1 relative">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                                <input
-                                    type="text"
-                                    placeholder="Buscar conteúdos..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2.5 model-input"
-                                />
-                            </div>
+                        {/* Ferramentas de Filtro e Busca */}
+                        <div className="p-4 border-b border-gray-200 bg-gray-50 rounded-b-xl">
+                            <div className="flex flex-col md:flex-row gap-4">
+                                <div className="flex-1 relative">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar conteúdos..."
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2.5 model-input"
+                                    />
+                                </div>
 
-                            <div className="flex gap-3">
-                                <select
-                                    value={filter}
-                                    onChange={(e) => setFilter(e.target.value as any)}
-                                    className="px-4 py-2.5 model-input"
-                                >
-                                    {contentFilters.map((filterOption) => (
-                                        <option key={filterOption.key} value={filterOption.key}>
-                                            {filterOption.label}
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="flex gap-3">
+                                    <select
+                                        value={filter}
+                                        onChange={(e) => setFilter(e.target.value as any)}
+                                        className="px-4 py-2.5 model-input"
+                                    >
+                                        {contentFilters.map((filterOption) => (
+                                            <option key={filterOption.key} value={filterOption.key}>
+                                                {filterOption.label}
+                                            </option>
+                                        ))}
+                                    </select>
 
-                                <button className="px-4 py-2.5 model-input flex items-center gap-2">
-                                    <Filter size={18} />
-                                    Filtros
-                                </button>
+                                    <button className="px-4 py-2.5 model-input flex items-center gap-2">
+                                        <Filter size={18} />
+                                        Filtros
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -342,19 +361,12 @@ export default function DisciplineDetail() {
                     </div>
                 </div>
             </div>
-            <ModalDisciplina
-                title={isTitle}
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                reloadTable={getDiscipline}
-            />
-
             <ModalContent
                 disciplineId={number.parse(id!)}
                 title="Criar conteúdo"
                 isOpen={isCreateContentModalOpen}
                 onClose={() => setIsCreateContentModalOpen(false)}
-                reloadTable={getContents}
+                reloadTable={getDiscipline}
             />
         </div>
     );

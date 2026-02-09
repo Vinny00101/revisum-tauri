@@ -114,6 +114,7 @@ export default function ModalDisciplina({
             {isOpen && (
                 <>
                     <motion.div
+                        key={`modal-${title}-${id ?? "new"}`}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -121,6 +122,7 @@ export default function ModalDisciplina({
                         onClick={onClose}
                     >
                         <motion.div
+                            key={`modal-${title}-${id ?? "new"}`}
                             initial={{ scale: 0.9, opacity: 0, y: 20 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.9, opacity: 0, y: 20 }}

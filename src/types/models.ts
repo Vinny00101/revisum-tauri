@@ -16,3 +16,13 @@ export interface Discipline {
     createdAt: string,
     updatedAt: string
 }
+
+export interface Content {
+    id: number;
+    discipline_id: number;
+    title: string;
+    description: string | null;
+    display_order: number;
+    created_at: string;
+    updated_at: string;
+}

@@ -3,8 +3,7 @@ import { BookOpen, Clock, Star } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import ProgressBar from "./Progress";
 import StatusBadge from "./StatusBadge";
-import ActionButtons from "./ActionButtons";
-import { hadleDisciplinas } from "@/util/discipline";
+import ModalRender from "./ModalRender";
 
 
 export const disciplineColumns: Column<DisciplineResponse>[] = [
@@ -96,10 +95,9 @@ export const disciplineColumns: Column<DisciplineResponse>[] = [
     header: "Ações",
     sortable: false,
     render: (d) => (
-      <ActionButtons
-        disciplineId={d.id}
-        isFavorite={d.favorite}
-        onAction={hadleDisciplinas}
+      <ModalRender
+        id={d.id}
+        favorite={d.favorite}
       />
     )
   }

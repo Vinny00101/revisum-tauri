@@ -9,7 +9,9 @@ pub struct ContentResponse{
     pub title: String,
     pub description: Option<String>,
     pub display_order: i64,
+    #[serde(serialize_with = "crate::utils::datetime::serialize")]
     pub created_at: DateTime<Utc>,
+    #[serde(serialize_with = "crate::utils::datetime::serialize")]
     pub updated_at: DateTime<Utc>,
 }
 

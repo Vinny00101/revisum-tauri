@@ -1,6 +1,4 @@
-import ModalDisciplina from "@/pages/disciplines/ModalDiscipline";
 import { DisciplineAction } from "@/types/types";
-import { eventBus } from "@/util/Event";
 import { Edit, Play, MoreVertical, Trash2, Download, Star } from "lucide-react";
 import { useState } from "react";
 
@@ -8,16 +6,16 @@ interface ActionButtonsProps {
     disciplineId: number;
     isFavorite?: boolean;
     onAction: (action: DisciplineAction, disciplineId: number) => void;
+    children?: React.ReactNode;
 }
 
 export default function ActionButtons({
     disciplineId,
     isFavorite = false,
-    onAction
+    onAction,
+    children,
 }: ActionButtonsProps) {
     const [showDropdown, setShowDropdown] = useState(false);
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
     return (
         <div className="flex items-center gap-2">
@@ -34,7 +32,7 @@ export default function ActionButtons({
 
             {/* Botão de Editar */}
             <button
-                onClick={isCreateModalOpen ? () => setIsCreateModalOpen(false) : () => setIsCreateModalOpen(true)}
+                onClick={() => onAction("edit", disciplineId)}
                 className="p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
                 title="Editar"
             >
@@ -75,7 +73,6 @@ export default function ActionButtons({
                                 <button
                                     onClick={() => {
                                         onAction("export", disciplineId);
-                                        setShowDropdown(false);
                                     }}
                                     className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                                 >
@@ -87,8 +84,6 @@ export default function ActionButtons({
                                 <button
                                     onClick={() => {
                                         onAction("delete", disciplineId);
-                                        setIsDeleteModalOpen(true);
-                                        setShowDropdown(false);
                                     }}
                                     className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                                 >
@@ -101,20 +96,9 @@ export default function ActionButtons({
                     </>
                 )}
             </div>
-            <ModalDisciplina
-                id={disciplineId}
-                title="Editar Disciplina"
-                isOpen={isCreateModalOpen}
-                onClose={() => setIsCreateModalOpen(false)}
-                reloadTable={() => eventBus.emit("discipline:updated")}
-            />
-            <ModalDisciplina
-                id={disciplineId}
-                title="Excluir Disciplina"
-                isOpen={isDeleteModalOpen}
-                onClose={() => setIsDeleteModalOpen(false)}
-                reloadTable={() => eventBus.emit("discipline:updated")}
-            />
+
+            {children}
+            
         </div>
     );
 }

@@ -8,25 +8,25 @@ export interface Column<T> {
 }
 
 export interface CreateDisciplineModalProps {
-    id?: number;
-    title: string;
-    isOpen: boolean;
-    onClose: () => void;
-    reloadTable: () => void;
+  id?: number;
+  title: string;
+  isOpen: boolean;
+  onClose: () => void;
+  reloadTable: () => void;
 }
 
 export interface DisciplineResponse {
-    id: number;
-    name: string;
-    description: string;
-    itemCount: number;
-    cardCount: number;
-    questionCount: number;
-    progress: number;
-    lastStudied: string | null;
-    createdAt: string;
-    favorite: boolean;
-    actions?: boolean;
+  id: number;
+  name: string;
+  description: string;
+  itemCount: number;
+  cardCount: number;
+  questionCount: number;
+  progress: number;
+  lastStudied: string | null;
+  createdAt: string;
+  favorite: boolean;
+  actions?: boolean;
 }
 
 export interface ContentResponse {
@@ -34,7 +34,7 @@ export interface ContentResponse {
   discipline_id: number;
   title: string;
   description: string;
-  display_order: string;
+  display_order: number;
   created_at: string;
   updated_at: string;
   actions?: boolean;
@@ -61,6 +61,6 @@ export interface CreateContentModalProps {
 }
 
 export interface message {
-    code: boolean,
-    message: string
+  code: boolean,
+  message: string
 }

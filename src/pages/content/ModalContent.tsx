@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/context/ToastContext";
 import { CreateContentModalProps, ContentFormData } from "@/types/TypeInterface";
 import OrderInput from "@/components/ui/orderInput";
+import { create_content } from "@/tauri/content";
 
 
 export default function ModalContent({
@@ -57,22 +58,21 @@ export default function ModalContent({
 
         setIsSubmitting(true);
         try {
-            /*
-              const message = await create_content(
-                disciplineId,
-                formData.title,
-                formData.description,
-                formData.display_order
-              );
-        
-              if (!message.code) {
-                showToast({ type: "error", message: message.message });
-              } else {
-                showToast({ type: "success", message: message.message });
-                reloadTable();
-                onClose();
-              }
-                */
+            
+            const message = await create_content(
+              disciplineId,
+              formData.title,
+              formData.description,
+              formData.display_order
+            );
+    
+            if (!message.code) {
+              showToast({ type: "error", message: message.message });
+            } else {
+              showToast({ type: "success", message: message.message });
+              reloadTable();
+              onClose();
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -238,21 +238,23 @@ export default function ModalContent({
                         )}
 
                         {title === "Excluir Conteúdo" && (
-                            <div className="p-6">
-                                <p className="mb-4">
-                                    Tem certeza que deseja excluir este conteúdo?
-                                </p>
-                                <div className="flex justify-end gap-2">
-                                    <button onClick={onClose}>Cancelar</button>
-                                    <button
-                                        onClick={handleDelete}
-                                        disabled={isDeleting}
-                                        className="bg-red-600 text-white px-4 py-2 rounded-lg"
-                                    >
-                                        Excluir
-                                    </button>
+                            <>
+                                <div className="p-6">
+                                    <p className="mb-4">
+                                        Tem certeza que deseja excluir este conteúdo?
+                                    </p>
+                                    <div className="flex justify-end gap-2">
+                                        <button onClick={onClose}>Cancelar</button>
+                                        <button
+                                            onClick={handleDelete}
+                                            disabled={isDeleting}
+                                            className="bg-red-600 text-white px-4 py-2 rounded-lg"
+                                        >
+                                            Excluir
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
+                            </>
                         )}
                     </motion.div>
                 </motion.div>
