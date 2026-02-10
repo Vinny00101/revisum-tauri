@@ -16,6 +16,10 @@ use command::{
         get_all_content_command,
         get_content_command,
         delete_content_command
+    },
+    study_item_command::{
+        create_study_item_command,
+        get_study_item_command
     }
 };
 
@@ -62,7 +66,9 @@ pub fn run() {
             update_content_command,
             get_all_content_command,
             get_content_command,
-            delete_content_command
+            delete_content_command,
+            create_study_item_command,
+            get_study_item_command
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

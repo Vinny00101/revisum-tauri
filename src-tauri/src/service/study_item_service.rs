@@ -1,0 +1,382 @@
+use tauri::State;
+
+use crate::{
+    db::{
+        config::DbStore,
+        db_methods::{db_begin_tx, db_commit_tx, db_rollback_tx},
+    },
+    error::app_error::AppError,
+    repository::{
+        card_repository::CardRepository, content_repository::ContentRepository,
+        discursive_response_repository::DiscursiveResponseRepository,
+        objective_answer_repository::ObjectiveAnswerRepository,
+        question_repository::QuestionRepository, studyi_item_repository::StudyItemRepository,
+        user_repository::UserRepository,
+    },
+    service::dto::{
+        card_response::CardResponse, discursive_response_response::DiscursiveResponseResponse,
+        message_response::Message, objective_answer_response::ObjectiveAnswerResponse,
+        question_response::QuestionResponse,
+    },
+};
+// response:
+
+#[derive(serde::Serialize)]
+pub struct QuestionFullResponse {
+    pub question: QuestionResponse,
+    pub objective_answers: Option<Vec<ObjectiveAnswerResponse>>,
+    pub discursive_response: Option<DiscursiveResponseResponse>,
+}
+
+#[derive(serde::Serialize)]
+pub struct StudyItemFullResponse {
+    pub id: i64,
+    pub content_id: i64,
+    pub item_type: String,
+    #[serde(serialize_with = "crate::utils::datetime::serialize")]
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    #[serde(serialize_with = "crate::utils::datetime::serialize")]
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+
+    pub card: Option<CardResponse>,
+    pub question: Option<QuestionFullResponse>,
+}
+
+#[derive(serde::Serialize)]
+pub struct StudyItemDataAll {
+    pub message: Message,
+    pub study_items: Option<Vec<StudyItemFullResponse>>,
+}
+
+#[derive(serde::Serialize)]
+pub struct StudyItemDataOne {
+    pub message: Message,
+    pub study_item: Option<StudyItemFullResponse>,
+}
+
+#[derive(serde::Deserialize)]
+pub enum StudyItemType {
+    CARD,
+    QUESTION,
+}
+
+#[derive(serde::Deserialize)]
+pub enum QuestionType {
+    OBJECTIVE,
+    DISCURSIVE,
+}
+
+#[derive(serde::Deserialize)]
+pub struct CreateCardInput {
+    pub front: String,
+    pub back: String,
+}
+
+#[derive(serde::Deserialize)]
+pub struct CreateObjectiveAnswerInput {
+    pub text: String,
+    pub image: Option<String>,
+    pub is_correct: i64,
+}
+
+#[derive(serde::Deserialize)]
+pub struct CreateQuestionInput {
+    pub question_type: QuestionType,
+    pub statement_text: String,
+    pub statement_image: Option<String>,
+    pub objective_answers: Option<Vec<CreateObjectiveAnswerInput>>,
+    pub expected_answer: Option<String>,
+    pub evaluation_criteria: Option<String>,
+}
+
+#[derive(serde::Deserialize)]
+pub struct CreateStudyItemInput {
+    pub content_id: i64,
+    pub item_type: StudyItemType,
+    pub card: Option<CreateCardInput>,
+    pub question: Option<CreateQuestionInput>,
+}
+
+pub struct StudyItemService<'a> {
+    study_item_repository: StudyItemRepository<'a>,
+    card_repository: CardRepository<'a>,
+    question_repository: QuestionRepository<'a>,
+    objective_answer_repository: ObjectiveAnswerRepository<'a>,
+    discursive_response_repository: DiscursiveResponseRepository<'a>,
+    user_repository: UserRepository<'a>,
+    content_repository: ContentRepository<'a>,
+}
+
+impl<'a> StudyItemService<'a> {
+    pub fn new(
+        study_item_repository: StudyItemRepository<'a>,
+        card_repository: CardRepository<'a>,
+        question_repository: QuestionRepository<'a>,
+        objective_answer_repository: ObjectiveAnswerRepository<'a>,
+        discursive_response_repository: DiscursiveResponseRepository<'a>,
+        user_repository: UserRepository<'a>,
+        content_repository: ContentRepository<'a>,
+    ) -> Self {
+        Self {
+            study_item_repository,
+            card_repository,
+            question_repository,
+            objective_answer_repository,
+            discursive_response_repository,
+            user_repository,
+            content_repository,
+        }
+    }
+
+    pub async fn create_study_item_tx(
+        &self,
+        state: State<'_, DbStore>,
+        user_id: i64,
+        input: CreateStudyItemInput,
+    ) -> Result<Message, AppError> {
+        // valida usuário
+        if !self.user_repository.exists_by_id(user_id).await? {
+            return Ok(Message {
+                code: false,
+                message: "Usuário não encontrado".into(),
+            });
+        }
+
+        // valida conteúdo
+        if !self
+            .content_repository
+            .exists_by_id(input.content_id, user_id)
+            .await?
+        {
+            return Ok(Message {
+                code: false,
+                message: "Conteúdo não encontrado".into(),
+            });
+        }
+
+        // BEGIN TRANSACTION
+        let mut tx = db_begin_tx(&state).await?;
+
+        // tudo a partir daqui é protegido
+        let result: Result<(), AppError> = async {
+            // cria study_item
+            let study_item_id = self
+                .study_item_repository
+                .create_study_item_tx(
+                    &mut tx,
+                    input.content_id,
+                    match input.item_type {
+                        StudyItemType::CARD => "CARD",
+                        StudyItemType::QUESTION => "QUESTION",
+                    }
+                    .to_string(),
+                )
+                .await?
+                .last_insert_id;
+
+            match input.item_type {
+                StudyItemType::CARD => {
+                    let card = input.card.ok_or(AppError::InvalidInput(
+                        "Dados do card não informados".into(),
+                    ))?;
+
+                    if card.front.is_empty() || card.back.is_empty() {
+                        return Err(AppError::InvalidInput(
+                            "Campos do card não preenchidos".into(),
+                        ));
+                    }
+
+                    self.card_repository
+                        .create_card_tx(&mut tx, study_item_id, card.front, card.back)
+                        .await?;
+                }
+
+                StudyItemType::QUESTION => {
+                    let question = input.question.ok_or(AppError::InvalidInput(
+                        "Dados da questão não informados".into(),
+                    ))?;
+
+                    let question_id = self
+                        .question_repository
+                        .create_question_tx(
+                            &mut tx,
+                            study_item_id,
+                            match question.question_type {
+                                QuestionType::OBJECTIVE => "OBJECTIVE",
+                                QuestionType::DISCURSIVE => "DISCURSIVE",
+                            }
+                            .to_string(),
+                            question.statement_text,
+                            question.statement_image,
+                        )
+                        .await?
+                        .last_insert_id;
+
+                    match question.question_type {
+                        QuestionType::OBJECTIVE => {
+                            let answers = question.objective_answers.ok_or(
+                                AppError::InvalidInput("Respostas objetivas não informadas".into()),
+                            )?;
+
+                            for ans in answers {
+                                self.objective_answer_repository
+                                    .create_objective_answer_tx(
+                                        &mut tx,
+                                        question_id,
+                                        ans.text,
+                                        ans.image,
+                                        ans.is_correct,
+                                    )
+                                    .await?;
+                            }
+                        }
+
+                        QuestionType::DISCURSIVE => {
+                            let expected = question.expected_answer.ok_or(
+                                AppError::InvalidInput("Resposta esperada não informada".into()),
+                            )?;
+
+                            self.discursive_response_repository
+                                .create_discursive_response_tx(
+                                    &mut tx,
+                                    question_id,
+                                    expected,
+                                    question.evaluation_criteria,
+                                )
+                                .await?;
+                        }
+                    }
+                }
+            }
+
+            Ok(())
+        }
+        .await;
+
+        // FINALIZA TRANSACTION
+        match result {
+            Ok(_) => {
+                db_commit_tx(tx).await?;
+                Ok(Message {
+                    code: true,
+                    message: "Item de estudo criado com sucesso".into(),
+                })
+            }
+            Err(e) => {
+                db_rollback_tx(tx).await?;
+                Err(e)
+            }
+        }
+    }
+
+    pub async fn get_all_study_item_by_content(
+        &self,
+        user_id: i64,
+        content_id: i64,
+    ) -> Result<StudyItemDataAll, AppError> {
+        if !self.user_repository.exists_by_id(user_id).await? {
+            return Ok(StudyItemDataAll {
+                message: Message {
+                    code: false,
+                    message: "Usuário não encontrado".into(),
+                },
+                study_items: None,
+            });
+        }
+
+        if !self
+            .content_repository
+            .exists_by_id(content_id, user_id)
+            .await?
+        {
+            return Ok(StudyItemDataAll {
+                message: Message {
+                    code: false,
+                    message: "Conteúdo não encontrado".into(),
+                },
+                study_items: None,
+            });
+        }
+
+        let study_items = self
+            .study_item_repository
+            .get_by_content(content_id)
+            .await?;
+
+        let mut response: Vec<StudyItemFullResponse> = Vec::new();
+
+        for item in study_items {
+            match item.item_type.as_str() {
+                "CARD" => {
+                    let card = self.card_repository.get_by_study_item(item.id)
+                        .await?
+                        .map(|c| CardResponse::from(&c));
+
+                    response.push(StudyItemFullResponse {
+                        id: item.id,
+                        content_id: item.content_id,
+                        item_type: item.item_type.clone(),
+                        created_at: item.created_at,
+                        updated_at: item.updated_at,
+                        card,
+                        question: None,
+                    });
+                }
+
+                "QUESTION" => {
+                    let question = self.question_repository.get_by_study_item(item.id).await?;
+
+                    if let Some(q) = question {
+                        let q_response: QuestionResponse = QuestionResponse::from(&q);
+
+                        let objective_answers = self
+                            .objective_answer_repository
+                            .get_by_question(q.id)
+                            .await?;
+
+                        let objective_answers = if objective_answers.is_empty() {
+                            None
+                        } else {
+                            Some(
+                                objective_answers
+                                    .iter()
+                                    .map(|a| ObjectiveAnswerResponse::from(a))
+                                    .collect::<Vec<_>>(),
+                            )
+                        };
+
+                        let discursive_response = self
+                            .discursive_response_repository
+                            .get_by_question(q.id)
+                            .await?
+                            .map(|d| DiscursiveResponseResponse::from(&d));
+
+                        response.push(StudyItemFullResponse {
+                            id: item.id,
+                            content_id: item.content_id,
+                            item_type: item.item_type.clone(),
+                            created_at: item.created_at,
+                            updated_at: item.updated_at,
+                            card: None,
+                            question: Some(QuestionFullResponse {
+                                question: q_response,
+                                objective_answers,
+                                discursive_response,
+                            }),
+                        });
+                    }
+                }
+
+                _ => {}
+            }
+        }
+
+        Ok(StudyItemDataAll {
+            message: Message {
+                code: true,
+                message: "Itens carregados com sucesso".into(),
+            },
+            study_items: Some(response),
+        })
+    }
+}

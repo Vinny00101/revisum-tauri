@@ -2,3 +2,8 @@ pub mod user_response;
 pub mod discipline_response;
 pub mod content_response;
 pub mod message_response;
+//pub mod study_item_response;
+pub mod card_response;
+pub mod question_response;
+pub mod objective_answer_response;  
+pub mod discursive_response_response;
