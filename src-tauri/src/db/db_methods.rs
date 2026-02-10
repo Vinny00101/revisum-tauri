@@ -1,6 +1,8 @@
 use serde_json::Value as JsonValue;
+use sqlx::SqliteConnection;
 use sqlx::{Error as SqlxError, FromRow, Sqlite, sqlite::SqliteRow};
 use tauri::State;
+use sqlx::Transaction;
 
 use crate::{db::config::DbStore, error::app_error::AppError};
 
@@ -148,3 +150,138 @@ pub async fn db_close(state: &State<'_, DbStore>) -> Result<(), AppError> {
     Ok(())
 }
  */
+
+// transation.
+
+pub async fn db_execute_tx(
+    tx: &mut Transaction<'_, Sqlite>,
+    query: &str,
+    values: Vec<JsonValue>,
+) -> Result<ExecuteResult, AppError> {
+    let conn: &mut SqliteConnection = tx.as_mut();
+
+    let mut sql_query = sqlx::query(query);
+    for value in values {
+        sql_query = bind_value(sql_query, value);
+    }
+
+    let result = sql_query
+        .execute(conn) 
+        .await
+        .map_err(|e| AppError::DatabaseMethods(format!(
+            "Falha ao executar (tx): {}",
+            e
+        )))?;
+
+    Ok(ExecuteResult {
+        rows_affected: result.rows_affected(),
+        last_insert_id: result.last_insert_rowid(),
+    })
+}
+
+pub async fn db_exists_tx(
+    tx: &mut Transaction<'_, Sqlite>,
+    query: &str,
+    values: Vec<JsonValue>,
+) -> Result<bool, AppError> {
+    let conn: &mut SqliteConnection = tx.as_mut();
+    let mut sql_query = sqlx::query(query);
+
+    for value in values {
+        sql_query = bind_value(sql_query, value);
+    }
+
+    let row = sql_query
+        .fetch_optional(conn)
+        .await
+        .map_err(|e| AppError::DatabaseMethods(format!("Falha ao verificar existência (tx): {}", e)))?;
+
+    Ok(row.is_some())
+}
+
+pub async fn db_select_many_tx<T>(
+    tx: &mut Transaction<'_, Sqlite>,
+    query: &str,
+    values: Vec<JsonValue>,
+) -> Result<Vec<T>, AppError>
+where
+    T: for<'r> FromRow<'r, SqliteRow> + Unpin + Send + 'static,
+{
+    let conn: &mut SqliteConnection = tx.as_mut();
+
+    let mut sql_query = sqlx::query(query);
+
+    for value in values {
+        sql_query = bind_value(sql_query, value);
+    }
+
+    let rows = sql_query
+        .fetch_all(conn)
+        .await
+        .map_err(|e| AppError::DatabaseMethods(format!("Falha ao selecionar múltiplos (tx): {}", e)))?;
+
+    let items = rows
+        .into_iter()
+        .map(|row| T::from_row(&row))
+        .collect::<Result<Vec<_>, SqlxError>>()
+        .map_err(|e| AppError::DatabaseMethods(format!("Falha ao mapear rows (tx): {}", e)))?;
+
+    Ok(items)
+}
+
+pub async fn db_select_one_tx<T>(
+    tx: &mut Transaction<'_, Sqlite>,
+    query: &str,
+    values: Vec<JsonValue>,
+) -> Result<Option<T>, AppError>
+where
+    T: for<'r> FromRow<'r, SqliteRow> + Unpin + Send + 'static,
+{
+    let conn: &mut SqliteConnection = tx.as_mut();
+
+    let mut sql_query = sqlx::query(query);
+
+    for value in values {
+        sql_query = bind_value(sql_query, value);
+    }
+
+    let row_opt = sql_query
+        .fetch_optional(conn)
+        .await
+        .map_err(|e| AppError::DatabaseMethods(format!("Falha ao selecionar um (tx): {}", e)))?;
+
+    match row_opt {
+        Some(row) => {
+            let item = T::from_row(&row)
+                .map_err(|e| AppError::DatabaseMethods(format!("Falha ao mapear row (tx): {}", e)))?;
+            Ok(Some(item))
+        }
+        None => Ok(None),
+    }
+}
+
+
+ pub async fn db_begin_tx<'a>(
+    state: &'a State<'_, DbStore>,
+) -> Result<Transaction<'a, Sqlite>, AppError> {
+    state.pool
+        .begin()
+        .await
+        .map_err(|e| AppError::DatabaseMethods(format!("BEGIN falhou: {}", e)))
+}
+
+pub async fn db_commit_tx(
+    tx: Transaction<'_, Sqlite>,
+) -> Result<(), AppError> {
+    tx.commit()
+        .await
+        .map_err(|e| AppError::DatabaseMethods(format!("COMMIT falhou: {}", e)))
+}
+
+pub async fn db_rollback_tx(
+    tx: Transaction<'_, Sqlite>,
+) -> Result<(), AppError> {
+    tx.rollback()
+        .await
+        .map_err(|e| AppError::DatabaseMethods(format!("ROLLBACK falhou: {}", e)))
+}
