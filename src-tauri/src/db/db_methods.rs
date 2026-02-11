@@ -178,7 +178,7 @@ pub async fn db_execute_tx(
         last_insert_id: result.last_insert_rowid(),
     })
 }
-
+/*
 pub async fn db_exists_tx(
     tx: &mut Transaction<'_, Sqlite>,
     query: &str,
@@ -259,7 +259,7 @@ where
         None => Ok(None),
     }
 }
-
+*/
 
  pub async fn db_begin_tx<'a>(
     state: &'a State<'_, DbStore>,

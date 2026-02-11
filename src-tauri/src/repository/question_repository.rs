@@ -17,44 +17,6 @@ impl<'a> QuestionRepository<'a> {
     pub fn new(state: State<'a, DbStore>) -> Self {
         Self { state }
     }
-
-    // create_question
-    pub async fn create_question(
-        &self,
-        study_item_id: i64,
-        question_type: String,
-        statement_text: String,
-        statement_image: Option<String>,
-    ) -> Result<ExecuteResult, AppError> {
-        let mut values = vec![
-            JsonValue::from(study_item_id),
-            JsonValue::String(question_type),
-            JsonValue::String(statement_text),
-        ];
-
-        values.push(match statement_image {
-            Some(img) => JsonValue::String(img),
-            None => JsonValue::Null,
-        });
-
-        let now = chrono::Utc::now().to_rfc3339();
-        values.push(JsonValue::String(now.clone()));
-        values.push(JsonValue::String(now));
-
-        self.execute(
-            "INSERT INTO question (
-                study_item_id,
-                question_type,
-                statement_text,
-                statement_image,
-                created_at,
-                updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?)",
-            values,
-        )
-        .await
-    }
-
     // update_question
     pub async fn update_question(
         &self,

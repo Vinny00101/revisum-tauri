@@ -18,26 +18,6 @@ impl<'a> StudyItemRepository<'a> {
         Self { state }
     }
 
-    pub async fn create_study_item(
-        &self,
-        content_id: i64,
-        item_type: String,
-    ) -> Result<ExecuteResult, AppError> {
-        let now = chrono::Utc::now().to_rfc3339();
-
-        self.execute(
-            "INSERT INTO studyitem (content_id, item_type, created_at, updated_at)
-             VALUES (?, ?, ?, ?)",
-            vec![
-                JsonValue::from(content_id),
-                JsonValue::String(item_type),
-                JsonValue::String(now.clone()),
-                JsonValue::String(now),
-            ],
-        )
-        .await
-    }
-
     pub async fn get_by_id(&self, id: i64) -> Result<Option<StudyItem>, AppError> {
         self.find_one(
             "SELECT * FROM studyitem WHERE id = ?",
@@ -68,10 +48,18 @@ impl<'a> StudyItemRepository<'a> {
         content_id: i64,
         item_type: String,
     ) -> Result<ExecuteResult, AppError> {
+        let now = chrono::Utc::now().to_rfc3339();
+
         self.execute_tx(
             tx, 
-            "INSERT INTO study_item (content_id, item_type) VALUES (?, ?)", 
-            vec![JsonValue::from(content_id), JsonValue::String(item_type)]
+            "INSERT INTO studyitem (content_id, item_type, created_at, updated_at)
+             VALUES (?, ?, ?, ?)", 
+            vec![
+                JsonValue::from(content_id),
+                JsonValue::String(item_type),
+                JsonValue::String(now.clone()),
+                JsonValue::String(now),
+            ],
         ).await
     }
 }

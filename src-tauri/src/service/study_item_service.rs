@@ -7,10 +7,12 @@ use crate::{
     },
     error::app_error::AppError,
     repository::{
-        card_repository::CardRepository, content_repository::ContentRepository,
+        card_repository::{CardRepository},
+        content_repository::ContentRepository,
         discursive_response_repository::DiscursiveResponseRepository,
         objective_answer_repository::ObjectiveAnswerRepository,
-        question_repository::QuestionRepository, studyi_item_repository::StudyItemRepository,
+        question_repository::QuestionRepository,
+        studyi_item_repository::StudyItemRepository,
         user_repository::UserRepository,
     },
     service::dto::{
@@ -53,6 +55,8 @@ pub struct StudyItemDataOne {
     pub message: Message,
     pub study_item: Option<StudyItemFullResponse>,
 }
+
+// inputs e types
 
 #[derive(serde::Deserialize)]
 pub enum StudyItemType {
@@ -145,7 +149,7 @@ impl<'a> StudyItemService<'a> {
         // valida conteúdo
         if !self
             .content_repository
-            .exists_by_id(input.content_id, user_id)
+            .exists_by_id_user(input.content_id, user_id)
             .await?
         {
             return Ok(Message {
@@ -286,7 +290,7 @@ impl<'a> StudyItemService<'a> {
 
         if !self
             .content_repository
-            .exists_by_id(content_id, user_id)
+            .exists_by_id_user(content_id, user_id)
             .await?
         {
             return Ok(StudyItemDataAll {
@@ -308,7 +312,9 @@ impl<'a> StudyItemService<'a> {
         for item in study_items {
             match item.item_type.as_str() {
                 "CARD" => {
-                    let card = self.card_repository.get_by_study_item(item.id)
+                    let card = self
+                        .card_repository
+                        .get_by_study_item(item.id)
                         .await?
                         .map(|c| CardResponse::from(&c));
 
@@ -367,7 +373,15 @@ impl<'a> StudyItemService<'a> {
                     }
                 }
 
-                _ => {}
+                _ => {
+                    return Ok(StudyItemDataAll {
+                        message: Message {
+                            code: false,
+                            message: "Tipo de item inválido".into(),
+                        },
+                        study_items: None,
+                    });
+                }
             }
         }
 
@@ -377,6 +391,144 @@ impl<'a> StudyItemService<'a> {
                 message: "Itens carregados com sucesso".into(),
             },
             study_items: Some(response),
+        })
+    }
+
+    pub async fn get_study_item_by_content(
+        &self,
+        study_item_id: i64,
+        user_id: i64,
+        content_id: i64,
+    ) -> Result<StudyItemDataOne, AppError> {
+        if !self.user_repository.exists_by_id(user_id).await? {
+            return Ok(StudyItemDataOne {
+                message: Message {
+                    code: false,
+                    message: "Usuário não encontrado".into(),
+                },
+                study_item: None,
+            });
+        }
+
+        if !self
+            .content_repository
+            .exists_by_id_user(content_id, user_id)
+            .await?
+        {
+            return Ok(StudyItemDataOne {
+                message: Message {
+                    code: false,
+                    message: "Conteúdo não encontrado".into(),
+                },
+                study_item: None,
+            });
+        }
+
+        let study_item = self.study_item_repository.get_by_id(study_item_id).await?;
+        let result = match study_item {
+            Some(item) => item,
+            None => {
+                return Ok(StudyItemDataOne {
+                    message: Message {
+                        code: false,
+                        message: "Item não foi encontrado".into(),
+                    },
+                    study_item: None,
+                });
+            }
+        };
+
+        let response: StudyItemFullResponse = match result.item_type.as_str() {
+            "CARD" => {
+                let card = self
+                    .card_repository
+                    .get_by_study_item(result.id)
+                    .await?
+                    .map(|c| CardResponse::from(&c));
+
+                StudyItemFullResponse {
+                    id: result.id,
+                    content_id: result.content_id,
+                    item_type: result.item_type.clone(),
+                    created_at: result.created_at,
+                    updated_at: result.updated_at,
+                    card,
+                    question: None,
+                }
+            }
+            "QUESTION" => {
+                let question = self
+                    .question_repository
+                    .get_by_study_item(result.id)
+                    .await?
+                    .map(|q| QuestionResponse::from(&q));
+
+                let q = match question {
+                    Some(q) => q,
+                    None => {
+                        return Ok(StudyItemDataOne {
+                            message: Message {
+                                code: false,
+                                message: "Questão não encontrada".into(),
+                            },
+                            study_item: None,
+                        });
+                    }
+                };
+
+                let objective_answers = self
+                    .objective_answer_repository
+                    .get_by_question(q.id)
+                    .await?;
+
+                let objective_answers = if objective_answers.is_empty() {
+                    None
+                } else {
+                    Some(
+                        objective_answers
+                            .iter()
+                            .map(|a| ObjectiveAnswerResponse::from(a))
+                            .collect::<Vec<_>>(),
+                    )
+                };
+
+                let discursive_response = self
+                    .discursive_response_repository
+                    .get_by_question(q.id)
+                    .await?
+                    .map(|d| DiscursiveResponseResponse::from(&d));
+
+                StudyItemFullResponse {
+                    id: result.id,
+                    content_id: result.content_id,
+                    item_type: result.item_type.clone(),
+                    created_at: result.created_at,
+                    updated_at: result.updated_at,
+                    card: None,
+                    question: Some(QuestionFullResponse {
+                        question: q,
+                        objective_answers,
+                        discursive_response,
+                    }),
+                }
+            }
+            _ => {
+                return Ok(StudyItemDataOne {
+                    message: Message {
+                        code: false,
+                        message: "Tipo de item inválido".into(),
+                    },
+                    study_item: None,
+                });
+            }
+        };
+
+        Ok(StudyItemDataOne {
+            message: Message {
+                code: true,
+                message: "Itens carregados com sucesso".into(),
+            },
+            study_item: Some(response),
         })
     }
 }

@@ -18,38 +18,6 @@ impl<'a> ObjectiveAnswerRepository<'a> {
         Self { state }
     }
 
-    // create_objective_answer
-    pub async fn create_objective_answer(
-        &self,
-        question_id: i64,
-        text: String,
-        image: Option<String>,
-        is_correct: i64,
-    ) -> Result<ExecuteResult, AppError> {
-        let mut values = vec![
-            JsonValue::from(question_id),
-            JsonValue::String(text),
-        ];
-
-        values.push(match image {
-            Some(img) => JsonValue::String(img),
-            None => JsonValue::Null,
-        });
-
-        values.push(JsonValue::from(is_correct));
-
-        self.execute(
-            "INSERT INTO objective_answer (
-                question_id,
-                text,
-                image,
-                is_correct
-            ) VALUES (?, ?, ?, ?)",
-            values,
-        )
-        .await
-    }
-
     // get_by_question
     pub async fn get_by_question(
         &self,

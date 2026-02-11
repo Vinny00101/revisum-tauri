@@ -135,6 +135,17 @@ impl<'a> ContentRepository<'a> {
             vec![JsonValue::from(discipline_id),JsonValue::from(content_id)],
         ).await
     }
+
+    pub async fn exists_by_id_user(
+        &self,
+        content_id: i64,
+        user_id: i64,
+    ) -> Result<bool, AppError>{
+        self.exists(
+            "SELECT EXISTS ( SELECT 1 FROM content c JOIN discipline d ON d.id = c.discipline_id WHERE c.id = ? AND d.user_id = ?);", 
+            vec![JsonValue::from(content_id),JsonValue::from(user_id)],
+        ).await
+    }
 }
 
 impl<'a> MutationRepository for ContentRepository<'a> {

@@ -18,30 +18,9 @@ impl<'a> CardRepository<'a> {
         Self { state }
     }
 
-    pub async fn create_card(
+    pub async fn update_card_tx(
         &self,
-        study_item_id: i64,
-        front: String,
-        back: String,
-    ) -> Result<ExecuteResult, AppError> {
-        let now = chrono::Utc::now().to_rfc3339();
-
-        self.execute(
-            "INSERT INTO card (study_item_id, front, back, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?)",
-            vec![
-                JsonValue::from(study_item_id),
-                JsonValue::String(front),
-                JsonValue::String(back),
-                JsonValue::String(now.clone()),
-                JsonValue::String(now),
-            ],
-        )
-        .await
-    }
-
-    pub async fn update_card(
-        &self,
+        tx: &mut Transaction<'_, Sqlite>,
         card_id: i64,
         update: UpdateCard,
     ) -> Result<ExecuteResult, AppError> {
@@ -68,7 +47,7 @@ impl<'a> CardRepository<'a> {
             fields.join(",")
         );
 
-        self.execute(&query, values).await
+        self.execute_tx(tx, &query, values).await
     }
 
     pub async fn create_card_tx(

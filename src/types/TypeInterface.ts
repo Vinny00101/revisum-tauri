@@ -64,3 +64,48 @@ export interface message {
   code: boolean,
   message: string
 }
+
+export enum StudyItemType {
+  CARD = "CARD",
+  QUESTION = "QUESTION",
+}
+
+export enum QuestionType {
+  OBJECTIVE = "OBJECTIVE",
+  DISCURSIVE = "DISCURSIVE",
+}
+
+export interface CreateCardInput {
+  front: string;
+  back: string;
+}
+
+export interface CreateObjectiveAnswerInput {
+  text: string;
+  image?: string | null;
+  is_correct: number; // 0 ou 1 (igual ao Rust)
+}
+
+export interface CreateQuestionInput {
+  question_type: QuestionType;
+  statement_text: string;
+  statement_image?: string | null;
+
+  // OBJECTIVE
+  objective_answers?: CreateObjectiveAnswerInput[] | null;
+
+  // DISCURSIVE
+  expected_answer?: string | null;
+  evaluation_criteria?: string | null;
+}
+
+export interface CreateStudyItemInput {
+  content_id: number;
+  item_type: StudyItemType;
+
+  // Usado quando item_type === CARD
+  card?: CreateCardInput | null;
+
+  // Usado quando item_type === QUESTION
+  question?: CreateQuestionInput | null;
+}

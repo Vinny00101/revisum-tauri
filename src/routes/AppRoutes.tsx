@@ -1,4 +1,5 @@
 import ProtectedRoutes from "@/components/ProtectedRoute";
+import Context from "@/pages/content/Content";
 import DashboardLayout from "@/pages/DashboardLayout";
 import Discipline from "@/pages/disciplines/Discipline";
 import DisciplineDetail from "@/pages/disciplines/DisciplineDetail";
@@ -20,7 +21,10 @@ export default function AppRoutes() {
 
           <Route path="/disciplines">
             <Route index element={<Discipline />}/>
-            <Route path=":id" element={<DisciplineDetail />}/>
+            <Route path=":id">
+              <Route index element={<DisciplineDetail/>}/>
+              <Route path="context/:id" element={<Context/>}/>
+            </Route>
           </Route>
 
           <Route path="/reviews" element={<DashboardMain />} />

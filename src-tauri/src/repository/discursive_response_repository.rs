@@ -18,34 +18,6 @@ impl<'a> DiscursiveResponseRepository<'a> {
         Self { state }
     }
 
-    // create_discursive_response
-    pub async fn create_discursive_response(
-        &self,
-        question_id: i64,
-        expected_answer: String,
-        evaluation_criteria: Option<String>,
-    ) -> Result<ExecuteResult, AppError> {
-        let mut values = vec![
-            JsonValue::from(question_id),
-            JsonValue::String(expected_answer),
-        ];
-
-        values.push(match evaluation_criteria {
-            Some(criteria) => JsonValue::String(criteria),
-            None => JsonValue::Null,
-        });
-
-        self.execute(
-            "INSERT INTO discursive_response (
-                question_id,
-                expected_answer,
-                evaluation_criteria
-            ) VALUES (?, ?, ?)",
-            values,
-        )
-        .await
-    }
-
     // get_by_question
     pub async fn get_by_question(
         &self,

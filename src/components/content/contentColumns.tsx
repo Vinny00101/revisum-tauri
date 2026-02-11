@@ -15,7 +15,7 @@ export const contentColumns: Column<ContentResponse>[] = [
 
                 <div className="min-w-0 flex-1">
                     <NavLink
-                        to={`/disciplines/${content.id}`}
+                        to={`/disciplines/${content.discipline_id}/context/${content.id}`}
                         state={{ breadcrumbName: content.title }}
                         className="group block"
                     >

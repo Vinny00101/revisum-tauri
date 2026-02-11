@@ -11,7 +11,7 @@ import { DisciplineResponse } from "@/types/TypeInterface";
 import { number } from "framer-motion";
 import { BarChart3, BookOpen, Calendar, FileText, Filter, Plus, Search, Star } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { ContentResponse } from "@/types/TypeInterface";
 import { contentFilters, contentSearch } from "@/components/content/contentTool";
 import { get_discipline } from "@/tauri/discipline";
@@ -368,6 +368,8 @@ export default function DisciplineDetail() {
                 onClose={() => setIsCreateContentModalOpen(false)}
                 reloadTable={getDiscipline}
             />
+
+            <Outlet />
         </div>
     );
 }
