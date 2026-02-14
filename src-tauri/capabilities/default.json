@@ -11,6 +11,12 @@
     "sql:allow-load",
     "sql:allow-execute",
     "sql:allow-select",
-    "store:default"
+    "store:default",
+    "fs:default",
+    "fs:allow-appdata-read-recursive",
+    {
+      "identifier": "fs:scope",
+      "allow": [{ "path": "$APPDATA/images/user/avatar/*" }]
+    }
   ]
 }

@@ -1,9 +1,11 @@
 import { NavLink } from "react-router-dom";
 import { BarChart3, BookOpen, BookText, HelpCircle, Home, Settings, Tag } from "lucide-react";
+import { convertFileSrc } from "@tauri-apps/api/core";
 
 interface SidebarProps {
   collapsed?: boolean;
   username?: string;
+  avatar_path?: string | null  | undefined;
   email?: string;
   logout: () => void;
 }
@@ -11,6 +13,7 @@ interface SidebarProps {
 export default function Sidebar({
   collapsed = false,
   username,
+  avatar_path,
   email,
   logout
 }: SidebarProps) {
@@ -69,8 +72,12 @@ export default function Sidebar({
       {!collapsed && (
         <div className="p-4 border-t border-gray-800">
           <div className="flex items-center justify-center space-x-3">
-            <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
-              <span className="font-bold">U</span>
+            <div className="w-10 h-10 bg-gray-700 rounded-full overflow-hidden flex items-center justify-center">
+              {avatar_path ? (
+                <img src={convertFileSrc(avatar_path)} alt="Avatar" className="w-full h-full object-cover" />
+              ):(
+                <span className="font-bold">{username?.charAt(0).toUpperCase()}</span>
+              )}
             </div>
             <div className="flex-1">
               <p className="font-semibold">{username}</p>

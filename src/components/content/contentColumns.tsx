@@ -1,8 +1,9 @@
-import { Column, ContentResponse } from "@/types/TypeInterface";
+import { Content } from "@/types/models";
+import { Column } from "@/types/TypeInterface";
 import { File } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
-export const contentColumns: Column<ContentResponse>[] = [
+export const contentColumns: Column<Content>[] = [
     {
         key: "title",
         header: "Título",
@@ -15,7 +16,7 @@ export const contentColumns: Column<ContentResponse>[] = [
 
                 <div className="min-w-0 flex-1">
                     <NavLink
-                        to={`/disciplines/${content.id}`}
+                        to={`/disciplines/${content.discipline_id}/${content.id}`}
                         state={{ breadcrumbName: content.title }}
                         className="group block"
                     >
@@ -65,7 +66,7 @@ export const contentColumns: Column<ContentResponse>[] = [
             <div>
                 <div className="text-sm font-medium text-gray-500">
                     {content.created_at ? (
-                        content.created_at
+                        new Date(content.created_at).toLocaleString("pt-BR",{dateStyle: "short", timeStyle: "short"})
                     ) : (
                         "Nunca estudado"
                     )}
@@ -80,7 +81,7 @@ export const contentColumns: Column<ContentResponse>[] = [
             <div>
                 <div className="text-sm font-medium text-gray-500">
                     {content.updated_at ? (
-                        content.updated_at
+                        new Date(content.updated_at).toLocaleString("pt-BR",{dateStyle: "short", timeStyle: "short"})
                     ) : (
                         <span className="text-gray-400">Não atualizado</span>
                     )}

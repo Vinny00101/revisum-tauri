@@ -24,6 +24,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <Sidebar
         collapsed={sidebarCollapsed}
         username={user?.username}
+        avatar_path={user?.avatar_path}
         email={user?.email}
         logout={handleLogout}
       />

@@ -1,6 +1,7 @@
 import AnimatedMessage from "@/components/animation/message";
 import { useToast } from "@/context/ToastContext";
 import { registerUser } from "@/tauri/user";
+import { MessageType } from "@/types/types";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 

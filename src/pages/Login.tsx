@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import AnimatedMessage from "@/components/animation/message";
 import { useToast } from "@/context/ToastContext";
 import { authenticateUser } from "@/tauri/user";
+import { MessageType } from "@/types/types";
 
 export default function Login() {
   const { login } = useTauri();

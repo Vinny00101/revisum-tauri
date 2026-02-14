@@ -58,7 +58,7 @@ export default function AnimatedMessage({
       {show && (
         <motion.div
           className={`
-            fixed top-4 right-4 z-80
+            fixed top-22 right-4 z-80
             flex items-start gap-3
             max-w-sm w-full
             border rounded-xl px-4 py-3 shadow-md

@@ -2,10 +2,12 @@ import { createContext, ReactNode, useContext, useEffect, useState } from "react
 import {User} from '@/types/models';
 import AuthStoreManager from "@/util/AuthStoreManager";
 import { invoke } from "@tauri-apps/api/core";
+import { getCurrentUser } from "@/tauri/user";
 
 interface TauriContextType {
   invoke: typeof invoke;
   user: User | null;
+  setUser: (toast: User) => void;
   loading: boolean; // Adiciona estado de loading
   login: (userData: User) => void;
   logout: () => void;
@@ -28,8 +30,13 @@ export function TauriProvider({ children }: { children: ReactNode }) {
           setUser(null);
           setLoading(false);
         }else{
-          console.log('Usuário encontrado no cookie:', authData.user);
-          setUser(authData.user);
+          const user = await getCurrentUser();
+
+          if(!user.code || !user.user){
+            return;
+          }else{
+            setUser(user.user);
+          }
         }
         setLoading(false);
       } catch (error) {
@@ -72,6 +79,7 @@ export function TauriProvider({ children }: { children: ReactNode }) {
     <TauriContext.Provider value={{
       invoke,
       user,
+      setUser: setUser,
       loading,
       login,
       logout,

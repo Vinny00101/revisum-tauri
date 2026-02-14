@@ -1,6 +1,7 @@
 import React from "react";
+import { QuestionType, StudyItemType } from "./types";
 export interface Column<T> {
-  key: keyof T;
+  key: keyof T | "actions" | "preview";
   header: string;
   sortable?: boolean;
   width?: string;
@@ -29,15 +30,12 @@ export interface DisciplineResponse {
   actions?: boolean;
 }
 
-export interface ContentResponse {
-  id: number;
-  discipline_id: number;
-  title: string;
-  description: string;
-  display_order: number;
-  created_at: string;
-  updated_at: string;
-  actions?: boolean;
+export interface UpdateUserRequest {
+  username?: string | null;
+  email?: string | null;
+  password?: string | null;
+  avatar_bytes?: number[] | null;
+  avatar_extension?: string | null;
 }
 
 export interface DisciplineFormData {
@@ -63,4 +61,39 @@ export interface CreateContentModalProps {
 export interface message {
   code: boolean,
   message: string
+}
+
+export interface CreateCardInput {
+  front: string;
+  back: string;
+}
+
+export interface CreateObjectiveAnswerInput {
+  text: string;
+  image?: string | null;
+  is_correct: number; // 0 ou 1 (igual ao Rust)
+}
+
+export interface CreateQuestionInput {
+  question_type: QuestionType;
+  statement_text: string;
+  statement_image?: string | null;
+
+  // OBJECTIVE
+  objective_answers?: CreateObjectiveAnswerInput[] | null;
+
+  // DISCURSIVE
+  expected_answer?: string | null;
+  evaluation_criteria?: string | null;
+}
+
+export interface CreateStudyItemInput {
+  content_id: number;
+  item_type: StudyItemType;
+
+  // Usado quando item_type === CARD
+  card?: CreateCardInput | null;
+
+  // Usado quando item_type === QUESTION
+  question?: CreateQuestionInput | null;
 }

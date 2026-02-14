@@ -4,12 +4,12 @@ import AuthStoreManager from "@/util/AuthStoreManager";
 import { invoke } from "@tauri-apps/api/core";
 
 export interface ContentOne{
-    message: message
-    content: Content | null
+    message: message;
+    content: Content | null;
 }
 export interface ContentAll{
-    message: message
-    content: Content[] | null
+    message: message;
+    content: Content[] | null;
 }
 
 

@@ -2,9 +2,7 @@ use tauri::{command, State};
 
 
 use crate::{
-    db::config::DbStore,
-    repository::user_repository::UserRepository,
-    service::{dto::message_response::Message, user_service::{Auth, UserService}},
+    db::config::DbStore, filesystem::AppPaths, service::{dto::{message_response::Message, user_response::UpdateUserRes}, service_factory::ServiceFactory, user_service::Auth}
 };
 
 
@@ -15,12 +13,32 @@ pub async fn create_user_command(
     password: String,
     email: String,
 ) -> Result<Message, String> {
-    let user_repository = UserRepository::new(state);
-    let user_service = UserService::new(user_repository);
+    let service = ServiceFactory::user(state.clone());
 
-    user_service.create_user(username, password, email).await.map_err(|e|e.to_frontend())
+    service.create_user(state, username, password, email).await.map_err(|e|e.to_frontend())
 }
 
+#[command(rename_all = "snake_case")]
+pub async fn update_user_command(
+    state: State<'_, DbStore>,
+    paths: State<'_, AppPaths>,
+    user_id: i64,
+    update: UpdateUserRes,
+)-> Result<Message, String> {
+    let service = ServiceFactory::user(state.clone());
+
+    service.update_user(state, &paths, user_id, update).await.map_err(|e|e.to_frontend())
+}
+
+#[command(rename_all = "snake_case")]
+pub async fn get_current_user_command(
+    state: State<'_, DbStore>,
+    user_id: i64,
+) -> Result<Auth, String> {
+    let service = ServiceFactory::user(state.clone());
+
+    service.get_current_user(user_id).await.map_err(|e|e.to_frontend())
+}
 
 #[command(rename_all = "snake_case")]
 pub async fn authentication_user_command(
@@ -28,8 +46,7 @@ pub async fn authentication_user_command(
     username: String,
     password: String,
 )-> Result<Auth, String>{
-    let user_repository = UserRepository::new(state);
-    let user_service = UserService::new(user_repository);
+    let service = ServiceFactory::user(state);
 
-    user_service.authentication_user(username, password).await.map_err(|e|e.to_frontend())
+    service.authentication_user(username, password).await.map_err(|e|e.to_frontend())
 }
