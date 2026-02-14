@@ -12,20 +12,19 @@ import { number } from "framer-motion";
 import { BarChart3, BookOpen, Calendar, FileText, Filter, Plus, Search, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
-import { ContentResponse } from "@/types/TypeInterface";
 import { contentFilters, contentSearch } from "@/components/content/contentTool";
 import { get_discipline } from "@/tauri/discipline";
 import ModalDisciplina from "./ModalDiscipline";
 import ModalContent from "../content/ModalContent";
-import { mapContentToResponse } from "@/service/mappers/ContentMapper";
 import { get_all_content } from "@/tauri/content";
+import { Content } from "@/types/models";
 
 export default function DisciplineDetail() {
     const navigate = useNavigate();
     const { showToast } = useToast();
     const { id } = useParams();
     const [discipline, setDiscipline] = useState<DisciplineResponse>();
-    const [contents, setContents] = useState<ContentResponse[]>([]);
+    const [contents, setContents] = useState<Content[]>([]);
     const [isCreateContentModalOpen, setIsCreateContentModalOpen] = useState(false);
     const { filter, search, setFilter, setSearch, processedData } = useSmartFilterSearch(contents, contentFilters, "all", contentSearch);
     const [editId, setEditId] = useState<number | null>(null);
@@ -75,7 +74,7 @@ export default function DisciplineDetail() {
                     message: result.message.message
                 })
             } else {
-                const adapted = result.content.map(mapContentToResponse);
+                const adapted = result.content;
                 setContents(adapted);
             }
         } catch (err: any) {

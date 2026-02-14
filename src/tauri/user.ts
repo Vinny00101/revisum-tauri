@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { User } from "@/types/models";
-import { message } from "@/types/TypeInterface";
+import { message, UpdateUserRequest } from "@/types/TypeInterface";
+import AuthStoreManager from "@/util/AuthStoreManager";
 
 
 export interface UserResponse{
@@ -26,4 +27,19 @@ export async function registerUser(
     return await invoke<{code: boolean; message: string}>(
         "create_user_command",{username: username, password: password, email: email}
     )
+}
+
+export async function getCurrentUser() {
+    const authdata = await AuthStoreManager.get();
+    return await invoke<UserResponse>("get_current_user_command", {user_id: authdata?.user.id});
+}
+
+export async function updateUser(
+  updateData: UpdateUserRequest
+): Promise<message> {
+    const authdata = await AuthStoreManager.get();
+    return await invoke<message>("update_user_command", {
+      user_id: authdata?.user.id,
+      update: updateData,
+    });
 }

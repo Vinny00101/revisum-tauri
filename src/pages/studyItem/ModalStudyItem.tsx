@@ -3,12 +3,11 @@ import { X, Save, Plus, Trash2, FileQuestion, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/context/ToastContext";
 import {
-    StudyItemType,
-    QuestionType,
     CreateStudyItemInput,
     CreateObjectiveAnswerInput,
 } from "@/types/TypeInterface";
 import { create_study_item } from "@/tauri/studyItem";
+import { QuestionType, StudyItemType } from "@/types/types";
 
 interface ModalStudyItemProps {
     contentId: number;

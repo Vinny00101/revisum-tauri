@@ -49,27 +49,12 @@ export default function Discipline() {
     }, [getAllDiscipline]);
 
     return (
-        <div className="p-6">
+        <div>
             {/* Cabeçalho */}
             <div className="mb-8">
                 <div className="flex items-center justify-between mb-4">
                     <h1 className="text-2xl font-bold text-gray-800">Disciplinas</h1>
                     <div className="flex items-center gap-3">
-                        {/* Botões de Ação em Lote 
-                        {selectedRows.length > 0 && (
-                            <div className="flex items-center gap-2 mr-4">
-                                <span className="text-sm text-gray-600">
-                                    {selectedRows.length} selecionado(s)
-                                </span>
-                                <button className="px-3 py-1 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
-                                    Exportar
-                                </button>
-                                <button className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200">
-                                    Excluir
-                                </button>
-                            </div>
-                        )}
-                        */}
                         <button
                             onClick={() => setIsCreateModalOpen(true)}
                             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 transition-colors"

@@ -1,4 +1,7 @@
+import { useTauri } from "@/context/TauriContext";
+import { convertFileSrc } from "@tauri-apps/api/core";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface NavbarProps {
   onMenuClick?: () => void;
@@ -7,7 +10,8 @@ interface NavbarProps {
 }
 
 export default function Navbar({ onMenuClick, sidebarCollapsed, username = "Usuário" }: NavbarProps) {
-  const [searchQuery, setSearchQuery] = useState("");
+  const {user} = useTauri();
+  const navigate = useNavigate();
   const [notifications] = useState([
     { id: 1, title: "Nova questão adicionada", time: "2 min atrás" },
     { id: 2, title: "Revisão pendente", time: "1 hora atrás" },
@@ -24,23 +28,10 @@ export default function Navbar({ onMenuClick, sidebarCollapsed, username = "Usu�
             className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                 d={sidebarCollapsed ? "M4 6h16M4 12h16M4 18h16" : "M6 18L18 6M6 6l12 12"} />
             </svg>
           </button>
-
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Pesquisar questões, revisões..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-64! lg:w-96 pl-10! pr-4 py-2 border base-input focus:border-transparent outline-none transition"
-            />
-            <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
         </div>
 
         {/* Lado Direito */}
@@ -53,7 +44,7 @@ export default function Navbar({ onMenuClick, sidebarCollapsed, username = "Usu�
               </svg>
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
-            
+
             {/* Dropdown de Notificações */}
             <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
               <div className="p-4 border-b border-gray-200">
@@ -83,14 +74,29 @@ export default function Navbar({ onMenuClick, sidebarCollapsed, username = "Usu�
           </button>
 
           {/* Perfil */}
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-              <span className="font-bold text-blue-600">U</span>
+          <button
+            onClick={() => navigate("/profile")}
+            className="flex items-center space-x-3 p-1 rounded-lg transition-colors group"
+          >
+            <div className="w-10 h-10 bg-blue-100 rounded-full overflow-hidden flex items-center justify-center">
+              {user?.avatar_path ?(
+                <img src={convertFileSrc(user.avatar_path)} alt="Avatar" className="w-full h-full object-cover" />
+              ): (
+                 <span className="font-bold text-blue-600">{username.charAt(0).toUpperCase()}</span>
+              )}
             </div>
-            <div className="hidden md:block">
-              <p className="font-semibold text-gray-800">{username}</p>
+            <div className="hidden md:flex items-center">
+              <p className="font-semibold text-gray-800 mr-2">{username}</p>
+              <svg
+                className="w-4 h-4 text-gray-500 group-hover:text-gray-800 transition-transform group-hover:translate-x-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+              </svg>
             </div>
-          </div>
+          </button>
         </div>
       </div>
     </header>

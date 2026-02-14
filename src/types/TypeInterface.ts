@@ -1,6 +1,7 @@
 import React from "react";
+import { QuestionType, StudyItemType } from "./types";
 export interface Column<T> {
-  key: keyof T;
+  key: keyof T | "actions" | "preview";
   header: string;
   sortable?: boolean;
   width?: string;
@@ -29,15 +30,12 @@ export interface DisciplineResponse {
   actions?: boolean;
 }
 
-export interface ContentResponse {
-  id: number;
-  discipline_id: number;
-  title: string;
-  description: string;
-  display_order: number;
-  created_at: string;
-  updated_at: string;
-  actions?: boolean;
+export interface UpdateUserRequest {
+  username?: string | null;
+  email?: string | null;
+  password?: string | null;
+  avatar_bytes?: number[] | null;
+  avatar_extension?: string | null;
 }
 
 export interface DisciplineFormData {
@@ -63,16 +61,6 @@ export interface CreateContentModalProps {
 export interface message {
   code: boolean,
   message: string
-}
-
-export enum StudyItemType {
-  CARD = "CARD",
-  QUESTION = "QUESTION",
-}
-
-export enum QuestionType {
-  OBJECTIVE = "OBJECTIVE",
-  DISCURSIVE = "DISCURSIVE",
 }
 
 export interface CreateCardInput {
