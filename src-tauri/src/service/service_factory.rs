@@ -1,10 +1,16 @@
 use tauri::State;
 
-use crate::{db::config::DbStore, repository::{card_repository::CardRepository, content_repository::ContentRepository, discipline_repository::DisciplineRepository, discursive_response_repository::DiscursiveResponseRepository, objective_answer_repository::ObjectiveAnswerRepository, question_repository::QuestionRepository, studyi_item_repository::StudyItemRepository, user_repository::UserRepository}, service::{content_service::ContentService, discipline_service::DisciplineService, study_item_service::StudyItemService}};
+use crate::{db::config::DbStore, repository::{card_repository::CardRepository, content_repository::ContentRepository, discipline_repository::DisciplineRepository, discursive_response_repository::DiscursiveResponseRepository, objective_answer_repository::ObjectiveAnswerRepository, question_repository::QuestionRepository, studyi_item_repository::StudyItemRepository, user_repository::UserRepository, user_status_repository::UserStatusRepository}, service::{content_service::ContentService, discipline_service::DisciplineService, study_item_service::StudyItemService, user_service::UserService}};
 
 pub struct ServiceFactory;
 
 impl ServiceFactory {
+    pub fn user<'a>(state: State<'a, DbStore>) -> UserService<'a> {
+        UserService::new(
+            UserRepository::new(state.clone()), 
+            UserStatusRepository::new(state)
+        )
+    }
     pub fn discipline<'a>(state: State<'a, DbStore>) -> DisciplineService<'a> {
         DisciplineService::new(
             DisciplineRepository::new(state.clone()),

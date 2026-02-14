@@ -34,10 +34,16 @@ impl<'a> StudyItemRepository<'a> {
         .await
     }
 
-    pub async fn delete(&self, id: i64) -> Result<ExecuteResult, AppError> {
-        self.execute(
-            "DELETE FROM studyitem WHERE id = ?",
-            vec![JsonValue::from(id)],
+    pub async fn delete_tx(
+        &self, 
+        tx: &mut Transaction<'_, Sqlite>,
+        id: i64,
+        content_id: i64
+    ) -> Result<ExecuteResult, AppError> {
+        self.execute_tx(
+            tx,
+            "DELETE FROM studyitem WHERE id = ? AND content_id ?",
+            vec![JsonValue::from(id), JsonValue::from(content_id)],
         )
         .await
     }

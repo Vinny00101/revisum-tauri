@@ -246,16 +246,17 @@ impl<'a> ContentService<'a> {
             });
         }
 
-        self.content_repository
+        let content = self.content_repository
             .get_content(content_id, discipline_id)
-            .await?;
+            .await?
+            .map(|c|ContentResponse::from(&c));
 
         Ok(ContentDataOne {
             message: Message {
                 code: true,
                 message: "Buscas efetuadas com sucesso".into(),
             },
-            content: None,
+            content: content,
         })
     }
 }

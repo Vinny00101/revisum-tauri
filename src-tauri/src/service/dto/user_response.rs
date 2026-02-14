@@ -11,6 +11,14 @@ pub struct UserResponse {
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
+#[derive(serde::Deserialize, Clone)] 
+pub struct UpdateUserRes {
+    pub username: Option<String>,
+    pub email: Option<String>,
+    pub password: Option<String>,
+    pub avatar_bytes: Option<Vec<u8>>,
+    pub avatar_extension: Option<String>,
+}
 
 
 impl From<&User> for UserResponse {

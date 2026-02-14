@@ -1,25 +1,23 @@
+use std::{fs, path::Path};
+
 use tauri::State;
+use uuid::Uuid;
 
 use crate::{
     db::{
         config::DbStore,
         db_methods::{db_begin_tx, db_commit_tx, db_rollback_tx},
-    },
-    error::app_error::AppError,
-    repository::{
-        card_repository::{CardRepository},
-        content_repository::ContentRepository,
+    }, error::app_error::AppError, filesystem::AppPaths, repository::{
+        card_repository::CardRepository, content_repository::ContentRepository,
         discursive_response_repository::DiscursiveResponseRepository,
         objective_answer_repository::ObjectiveAnswerRepository,
-        question_repository::QuestionRepository,
-        studyi_item_repository::StudyItemRepository,
+        question_repository::QuestionRepository, studyi_item_repository::StudyItemRepository,
         user_repository::UserRepository,
-    },
-    service::dto::{
+    }, service::dto::{
         card_response::CardResponse, discursive_response_response::DiscursiveResponseResponse,
         message_response::Message, objective_answer_response::ObjectiveAnswerResponse,
         question_response::QuestionResponse,
-    },
+    }
 };
 // response:
 
@@ -87,7 +85,8 @@ pub struct CreateObjectiveAnswerInput {
 pub struct CreateQuestionInput {
     pub question_type: QuestionType,
     pub statement_text: String,
-    pub statement_image: Option<String>,
+    pub avatar_bytes: Option<Vec<u8>>,
+    pub avatar_extension: Option<String>,
     pub objective_answers: Option<Vec<CreateObjectiveAnswerInput>>,
     pub expected_answer: Option<String>,
     pub evaluation_criteria: Option<String>,
@@ -132,9 +131,38 @@ impl<'a> StudyItemService<'a> {
         }
     }
 
+    async fn save_avatar(
+        &self,
+        paths: &AppPaths,
+        bytes: Vec<u8>,
+        extension: String,
+        old_avatar_path: Option<String>,
+    ) -> Result<String, AppError> {
+        if !paths.avatars.exists() {
+            fs::create_dir_all(&paths.avatars)
+                .map_err(|e| AppError::Internal(format!("Erro ao criar pasta: {}", e)))?;
+        }
+
+        let file_name = format!("{}.{}", Uuid::new_v4(), extension);
+        let file_path = paths.avatars.join(&file_name);
+
+        fs::write(&file_path, bytes)
+            .map_err(|e| AppError::Internal(format!("Erro ao salvar imagem: {}", e)))?;
+
+        if let Some(path_str) = old_avatar_path {
+            let old_path = Path::new(&path_str);
+            if old_path.exists() {
+                let _ = fs::remove_file(old_path);
+            }
+        }
+
+        Ok(file_path.to_string_lossy().into_owned())
+    }
+
     pub async fn create_study_item_tx(
         &self,
         state: State<'_, DbStore>,
+        paths: &AppPaths,
         user_id: i64,
         input: CreateStudyItemInput,
     ) -> Result<Message, AppError> {
@@ -200,6 +228,16 @@ impl<'a> StudyItemService<'a> {
                         "Dados da questão não informados".into(),
                     ))?;
 
+                    let mut avatar_path_to_save: Option<String> = None;
+                    if let (Some(bytes), Some(ext)) =
+                        (question.avatar_bytes.clone(), question.avatar_extension.clone())
+                    {
+                        let path = self
+                            .save_avatar(paths, bytes, ext, None)
+                            .await?;
+                        avatar_path_to_save = Some(path);
+                    }
+
                     let question_id = self
                         .question_repository
                         .create_question_tx(
@@ -211,7 +249,7 @@ impl<'a> StudyItemService<'a> {
                             }
                             .to_string(),
                             question.statement_text,
-                            question.statement_image,
+                            avatar_path_to_save,
                         )
                         .await?
                         .last_insert_id;
@@ -529,6 +567,45 @@ impl<'a> StudyItemService<'a> {
                 message: "Itens carregados com sucesso".into(),
             },
             study_item: Some(response),
+        })
+    }
+
+    pub async fn delete_study_item_by_content(
+        &self,
+        state: State<'_, DbStore>,
+        study_item_id: i64,
+        user_id: i64,
+        content_id: i64,
+    ) -> Result<Message, AppError> {
+        if !self.user_repository.exists_by_id(user_id).await? {
+            return Ok(Message {
+                code: false,
+                message: "Usuário não encontrado".into(),
+            });
+        }
+
+        if !self
+            .content_repository
+            .exists_by_id_user(content_id, user_id)
+            .await?
+        {
+            return Ok(Message {
+                code: false,
+                message: "Conteúdo não encontrado".into(),
+            });
+        }
+
+        let mut tx = db_begin_tx(&state).await?;
+
+        self.study_item_repository
+            .delete_tx(&mut tx, study_item_id, content_id)
+            .await?;
+
+        tx.commit().await?;
+
+        Ok(Message {
+            code: true,
+            message: "Item de estudo deletado com sucesso".into(),
         })
     }
 }

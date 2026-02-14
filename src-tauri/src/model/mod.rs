@@ -7,3 +7,4 @@ pub mod question;
 pub mod objective_answer;
 pub mod discursive_response;
 pub mod reviewlog;
+pub mod user_status;
