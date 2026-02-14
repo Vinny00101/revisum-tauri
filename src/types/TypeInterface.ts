@@ -16,20 +16,6 @@ export interface CreateDisciplineModalProps {
   reloadTable: () => void;
 }
 
-export interface DisciplineResponse {
-  id: number;
-  name: string;
-  description: string;
-  itemCount: number;
-  cardCount: number;
-  questionCount: number;
-  progress: number;
-  lastStudied: string | null;
-  createdAt: string;
-  favorite: boolean;
-  actions?: boolean;
-}
-
 export interface UpdateUserRequest {
   username?: string | null;
   email?: string | null;
@@ -77,7 +63,8 @@ export interface CreateObjectiveAnswerInput {
 export interface CreateQuestionInput {
   question_type: QuestionType;
   statement_text: string;
-  statement_image?: string | null;
+  question_img_bytes?: number[] | null;
+  question_img_extension?: string | null;
 
   // OBJECTIVE
   objective_answers?: CreateObjectiveAnswerInput[] | null;

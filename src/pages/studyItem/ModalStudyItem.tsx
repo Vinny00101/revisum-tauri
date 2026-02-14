@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X, Save, Plus, Trash2, FileQuestion, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/context/ToastContext";
@@ -41,6 +41,31 @@ export default function ModalStudyItem({
         CreateObjectiveAnswerInput[]
     >([]);
 
+    const [preview, setPreview] = useState<string | null>(null);
+    const [imageFile, setImageFile] = useState<{ bytes: number[], ext: string } | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Resetar imagem ao fechar/abrir modal
+    useEffect(() => {
+        if (!isOpen) {
+            setPreview(null);
+            setImageFile(null);
+        }
+    }, [isOpen]);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setPreview(URL.createObjectURL(file));
+
+        const arrayBuffer = await file.arrayBuffer();
+        const bytes = Array.from(new Uint8Array(arrayBuffer));
+        const ext = file.name.split('.').pop() || "png";
+
+        setImageFile({ bytes, ext });
+    };
+
     const addObjectiveAnswer = () => {
         setObjectiveAnswers((prev) => [
             ...prev,
@@ -57,6 +82,8 @@ export default function ModalStudyItem({
 
         try {
             let payload: CreateStudyItemInput;
+
+            console.log(contentId);
 
             if (itemType === StudyItemType.CARD) {
                 payload = {
@@ -76,6 +103,8 @@ export default function ModalStudyItem({
                     question: {
                         question_type: questionType,
                         statement_text: statementText,
+                        question_img_bytes: imageFile ? imageFile.bytes : null,
+                        question_img_extension: imageFile ? imageFile.ext : null,
                         objective_answers:
                             questionType === QuestionType.OBJECTIVE
                                 ? objectiveAnswers
@@ -93,17 +122,17 @@ export default function ModalStudyItem({
             }
 
             const result = await create_study_item(payload);
-            
+
             if (!result.code) {
-              showToast({ type: "error", message: result.message });
+                showToast({ type: "error", message: result.message });
             } else {
-              showToast({ type: "success", message: result.message });
-              reload();
-              onClose();
+                showToast({ type: "success", message: result.message });
+                reload();
+                onClose();
             }
-            
-        } catch {
-            showToast({ type: "error", message: "Erro ao criar item de estudo" });
+
+        } catch (err: any) {
+            showToast({ type: "error", message: "Erro ao criar item de estudo: " + err });
         } finally {
             setIsSubmitting(false);
         }
@@ -166,8 +195,8 @@ export default function ModalStudyItem({
                                         type="button"
                                         onClick={() => setItemType(StudyItemType.CARD)}
                                         className={`px-2 py-2 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${itemType === StudyItemType.CARD
-                                                ? "border-blue-500 bg-blue-50 text-blue-700"
-                                                : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                                            ? "border-blue-500 bg-blue-50 text-blue-700"
+                                            : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                                             }`}
                                     >
                                         <FileText size={18} />
@@ -177,8 +206,8 @@ export default function ModalStudyItem({
                                         type="button"
                                         onClick={() => setItemType(StudyItemType.QUESTION)}
                                         className={`px-2 py-2 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${itemType === StudyItemType.QUESTION
-                                                ? "border-blue-500 bg-blue-50 text-blue-700"
-                                                : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                                            ? "border-blue-500 bg-blue-50 text-blue-700"
+                                            : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                                             }`}
                                     >
                                         <FileQuestion size={18} />
@@ -224,6 +253,46 @@ export default function ModalStudyItem({
                             {/* QUESTION */}
                             {itemType === StudyItemType.QUESTION && (
                                 <div className="space-y-6 max-h-100 overflow-y-auto border-t p-2 border-gray-200">
+                                    {/* Upload de Imagem para a Questão */}
+                                    <div className="mt-4">
+                                        <label className="text-sm font-medium text-gray-700 mb-2 block">
+                                            Imagem da Questão (opcional)
+                                        </label>
+
+                                        <div className="flex-col items-center gap-4">
+                                            {preview ? (
+                                                <div className="relative w-full h-40 rounded-lg border overflow-hidden bg-gray-50">
+                                                    <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+                                                    <button
+                                                        onClick={() => { setPreview(null); setImageFile(null); }}
+                                                        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                                                    >
+                                                        <X size={12} />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => fileInputRef.current?.click()}
+                                                    className="w-full h-40 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-all"
+                                                >
+                                                    <Plus size={24} />
+                                                    <span className="text-[10px] font-medium">Add Imagem</span>
+                                                </button>
+                                            )}
+
+                                            <div className="flex-1">
+                                                <p className="text-xs text-gray-500">A imagem aparecerá acima do enunciado durante o estudo.</p>
+                                                <input
+                                                    type="file"
+                                                    ref={fileInputRef}
+                                                    onChange={handleFileChange}
+                                                    className="hidden"
+                                                    accept="image/*"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
                                     {/* Tipo de Questão */}
                                     <div>
                                         <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
@@ -234,8 +303,8 @@ export default function ModalStudyItem({
                                                 type="button"
                                                 onClick={() => setQuestionType(QuestionType.OBJECTIVE)}
                                                 className={`px-2 py-2 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${questionType === QuestionType.OBJECTIVE
-                                                        ? "border-blue-500 bg-blue-50 text-blue-700"
-                                                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                                                    ? "border-blue-500 bg-blue-50 text-blue-700"
+                                                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                                                     }`}
                                             >
                                                 Objetiva
@@ -244,8 +313,8 @@ export default function ModalStudyItem({
                                                 type="button"
                                                 onClick={() => setQuestionType(QuestionType.DISCURSIVE)}
                                                 className={`px-2 py-2 rounded-lg border-2 transition-all flex items-center justify-center gap-2 ${questionType === QuestionType.DISCURSIVE
-                                                        ? "border-blue-500 bg-blue-50 text-blue-700"
-                                                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                                                    ? "border-blue-500 bg-blue-50 text-blue-700"
+                                                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                                                     }`}
                                             >
                                                 Discursiva
@@ -308,8 +377,8 @@ export default function ModalStudyItem({
                                                                     );
                                                                 }}
                                                                 className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${ans.is_correct === 1
-                                                                        ? "bg-green-100 text-green-700 border border-green-300"
-                                                                        : "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-300"
+                                                                    ? "bg-green-100 text-green-700 border border-green-300"
+                                                                    : "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-300"
                                                                     }`}
                                                             >
                                                                 Correta

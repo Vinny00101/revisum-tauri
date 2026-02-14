@@ -7,6 +7,15 @@ export interface User {
     avatar_path: string | null;
     createdAt: string;
     updatedAt: string;
+    status: Status | null;
+}
+
+export interface Status {
+  user_id: number;
+  current_streak: number;
+  last_review_date: string | null;
+  longest_streak: number;
+  total_study_time: number;
 }
 
 
@@ -17,6 +26,10 @@ export interface Discipline {
     description: string | null,
     createdAt: string,
     updatedAt: string
+    total_items: number;
+    items_mastered: number;
+    progress_percent: number,
+    last_review_date: string | null,
 }
 
 export interface Content {

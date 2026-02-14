@@ -15,7 +15,7 @@ import { Breadcrumb } from "@/components/dashboard/Breadcrumb";
 
 
 export default function Context() {
-    const { id, contextid } = useParams();
+    const { id, contentid } = useParams();
     const { showToast } = useToast();
     const [studyItem, setStudyItem] = useState<StudyItemFullResponse[]>([]);
     const [Content, setContent] = useState<Content>();
@@ -27,7 +27,7 @@ export default function Context() {
 
     const getContent = async () => {
         try {
-            if (!id || !contextid) {
+            if (!id || !contentid) {
                 showToast({
                     type: "error",
                     message: "O identificador único não existe no parâmetro da url.",
@@ -35,7 +35,7 @@ export default function Context() {
                 navigate(`/disciplines/${id}`);
                 return;
             }
-            const discipline = await get_content(number.parse(contextid), number.parse(id));
+            const discipline = await get_content(number.parse(contentid), number.parse(id));
 
             if (!discipline.content) {
                 showToast({
@@ -46,7 +46,7 @@ export default function Context() {
                 return;
             }
 
-            getAllStudyItems(number.parse(contextid));
+            getAllStudyItems(number.parse(contentid));
 
             setContent(discipline.content);
         } catch (err: any) {
@@ -255,10 +255,10 @@ export default function Context() {
                 </div>
 
                 <ModalStudyItem
-                    contentId={number.parse(id!)}
+                    contentId={number.parse(contentid!)}
                     onClose={() => setIsCreateStudyItem(false)}
                     isOpen={isCreateStudyItem}
-                    reload={() => getAllStudyItems}
+                    reload={() => getAllStudyItems(number.parse(contentid!))}
                 />
             </div>
             );

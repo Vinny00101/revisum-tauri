@@ -85,8 +85,8 @@ pub struct CreateObjectiveAnswerInput {
 pub struct CreateQuestionInput {
     pub question_type: QuestionType,
     pub statement_text: String,
-    pub avatar_bytes: Option<Vec<u8>>,
-    pub avatar_extension: Option<String>,
+    pub question_img_bytes: Option<Vec<u8>>,
+    pub question_img_extension: Option<String>,
     pub objective_answers: Option<Vec<CreateObjectiveAnswerInput>>,
     pub expected_answer: Option<String>,
     pub evaluation_criteria: Option<String>,
@@ -131,25 +131,25 @@ impl<'a> StudyItemService<'a> {
         }
     }
 
-    async fn save_avatar(
+    async fn save_question(
         &self,
         paths: &AppPaths,
         bytes: Vec<u8>,
         extension: String,
-        old_avatar_path: Option<String>,
+        old_question_path: Option<String>,
     ) -> Result<String, AppError> {
-        if !paths.avatars.exists() {
-            fs::create_dir_all(&paths.avatars)
+        if !paths.questions.exists() {
+            fs::create_dir_all(&paths.questions)
                 .map_err(|e| AppError::Internal(format!("Erro ao criar pasta: {}", e)))?;
         }
 
         let file_name = format!("{}.{}", Uuid::new_v4(), extension);
-        let file_path = paths.avatars.join(&file_name);
+        let file_path = paths.questions.join(&file_name);
 
         fs::write(&file_path, bytes)
             .map_err(|e| AppError::Internal(format!("Erro ao salvar imagem: {}", e)))?;
 
-        if let Some(path_str) = old_avatar_path {
+        if let Some(path_str) = old_question_path {
             let old_path = Path::new(&path_str);
             if old_path.exists() {
                 let _ = fs::remove_file(old_path);
@@ -230,10 +230,10 @@ impl<'a> StudyItemService<'a> {
 
                     let mut avatar_path_to_save: Option<String> = None;
                     if let (Some(bytes), Some(ext)) =
-                        (question.avatar_bytes.clone(), question.avatar_extension.clone())
+                        (question.question_img_bytes.clone(), question.question_img_extension.clone())
                     {
                         let path = self
-                            .save_avatar(paths, bytes, ext, None)
+                            .save_question(paths, bytes, ext, None)
                             .await?;
                         avatar_path_to_save = Some(path);
                     }

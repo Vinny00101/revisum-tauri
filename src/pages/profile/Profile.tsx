@@ -88,7 +88,7 @@ export default function Profile() {
           </div>
           <div>
             <p className="text-orange-600 text-sm font-medium">Ofensiva Atual</p>
-            <p className="text-2xl font-bold text-orange-900">20 dias</p>
+            <p className="text-2xl font-bold text-orange-900">{user?.status?.current_streak} dias</p>
           </div>
         </div>
 
@@ -99,7 +99,7 @@ export default function Profile() {
           </div>
           <div>
             <p className="text-purple-600 text-sm font-medium">Melhor Ofensiva</p>
-            <p className="text-2xl font-bold text-purple-900">43 dias</p>
+            <p className="text-2xl font-bold text-purple-900">{user?.status?.current_streak} dias</p>
           </div>
         </div>
 
@@ -110,7 +110,11 @@ export default function Profile() {
           </div>
           <div>
             <p className="text-blue-600 text-sm font-medium">Tempo de Estudo</p>
-            <p className="text-2xl font-bold text-blue-900">{/*Math.floor(userData.status.total_study_time / 60)}h {userData.status.total_study_time % 60*/}80 m</p>
+            { user?.status?.total_study_time && (
+              <p className="text-2xl font-bold text-blue-900">
+                {Math.floor(user.status.total_study_time / 60)}h {user.status.total_study_time % 60}m
+              </p>
+            )}
           </div>
         </div>
 

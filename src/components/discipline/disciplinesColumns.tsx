@@ -1,12 +1,13 @@
-import { Column, DisciplineResponse } from "@/types/TypeInterface";
-import { BookOpen, Clock, Star } from "lucide-react";
+import { Column } from "@/types/TypeInterface";
+import { BookOpen, Clock } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import ProgressBar from "./Progress";
-import StatusBadge from "./StatusBadge";
+//import StatusBadge from "./StatusBadge";
 import ModalRender from "./ModalRender";
+import { Discipline } from "@/types/models";
 
 
-export const disciplineColumns: Column<DisciplineResponse>[] = [
+export const disciplineColumns: Column<Discipline>[] = [
   {
     key: "name",
     header: "Disciplina",
@@ -26,39 +27,35 @@ export const disciplineColumns: Column<DisciplineResponse>[] = [
             >
               {discipline.name}
             </NavLink>
-
-            {discipline.favorite && (
-              <Star size={14} className="fill-yellow-400 text-yellow-400" />
-            )}
           </div>
 
           <div className="text-sm text-gray-500 truncate max-w-xs">
             {discipline.description}
           </div>
 
-          <div className="flex items-center gap-4 mt-1">
-            <span className="text-xs text-gray-500 flex items-center gap-1">
-              <span className="w-2 h-2 bg-blue-500 rounded-full" />
-              {discipline.cardCount} cards
-            </span>
-            <span className="text-xs text-gray-500 flex items-center gap-1">
-              <span className="w-2 h-2 bg-green-500 rounded-full" />
-              {discipline.questionCount} questões
-            </span>
-          </div>
+          {/*    <div className="flex items-center gap-4 mt-1">
+                <span className="text-xs text-gray-500 flex items-center gap-1">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full" />
+                  {discipline.cardCount} cards
+                </span>
+                <span className="text-xs text-gray-500 flex items-center gap-1">
+                  <span className="w-2 h-2 bg-green-500 rounded-full" />
+                  {discipline.questionCount} questões
+                </span>
+              </div>*/}
         </div>
       </div>
     ),
   },
 
   {
-    key: "itemCount",
+    key: "total_items",
     header: "Itens",
     sortable: true,
     render: (d) => (
       <div className="text-start">
         <span className="font-semibold text-gray-800">
-          {d.itemCount}
+          {d.total_items}
         </span>
         <div className="text-xs text-gray-500">itens totais</div>
       </div>
@@ -66,26 +63,26 @@ export const disciplineColumns: Column<DisciplineResponse>[] = [
   },
 
   {
-    key: "progress",
+    key: "progress_percent",
     header: "Progresso",
     sortable: true,
     render: (d) => (
       <div className="w-40">
-        <ProgressBar progress={d.progress} />
-        <StatusBadge lastStudied={d.lastStudied} type="Simple" />
+        <ProgressBar progress={d.progress_percent} />
+        {/*<StatusBadge lastStudied={} type="Simple" />*/}
       </div>
     ),
   },
 
   {
-    key: "lastStudied",
+    key: "last_review_date",
     header: "Último Estudo",
     sortable: true,
     render: (d) => (
       <div className="flex items-center gap-2">
         <Clock size={16} className="text-gray-400" />
         <span className="text-sm text-gray-700">
-          {d.lastStudied ?? "Nunca estudado"}
+          {d.last_review_date ?? "Nunca estudado"}
         </span>
       </div>
     ),
@@ -97,7 +94,7 @@ export const disciplineColumns: Column<DisciplineResponse>[] = [
     render: (d) => (
       <ModalRender
         id={d.id}
-        favorite={d.favorite}
+        favorite={false}
       />
     )
   }

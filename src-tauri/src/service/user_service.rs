@@ -253,12 +253,15 @@ impl<'a> UserService<'a> {
         }
 
         let user = self.user_repository.get_user_by_id(user_id).await?
-            .map(|u| UserResponse::from(&u));
+            .ok_or("Usuário não encontrado")?;
+        let status = self.user_status_repository.get_by_user_id(user_id).await?;
+
+        let result = UserResponse::new(&user, status);
 
         Ok(Auth {
             code: true,
             message: "Busca efetuada com sucesso".into(),
-            user: user,
+            user: Some(result),
         })
     }
 
@@ -293,8 +296,8 @@ impl<'a> UserService<'a> {
                 user: None,
             });
         }
-
-        let result = UserResponse::from(&user_result);
+        let status = self.user_status_repository.get_by_user_id(user_result.id).await?;
+        let result = UserResponse::new(&user_result, status);
 
         Ok(Auth {
             code: true,

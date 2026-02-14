@@ -56,7 +56,6 @@ impl<'a> UserStatusRepository<'a> {
     pub async fn increment_streak(&self, user_id: i64) -> Result<ExecuteResult, AppError> {
         let now = chrono::Utc::now().to_rfc3339();
         
-        // Usamos lógica SQL para garantir atomicidade no recorde (longest_streak)
         self.execute(
             "UPDATE user_status 
              SET current_streak = current_streak + 1, 

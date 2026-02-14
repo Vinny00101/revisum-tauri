@@ -1,7 +1,7 @@
 import { MessageType } from "@/types/types";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, CircleX, Info, TriangleAlert } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 interface AnimatedMessageProps {
   message: { type: MessageType; message: string } | null;
@@ -33,16 +33,12 @@ export default function AnimatedMessage({
   onMessageClear,
   duration = 3000,
 }: AnimatedMessageProps) {
-  const [show, setShow] = useState(false);
-  console.log("AnimatedMessage received message:", message);
+
   useEffect(() => {
     if (!message) return;
 
-    setShow(true);
-
     const timer = setTimeout(() => {
-      setShow(false);
-      setTimeout(() => onMessageClear?.(), 300);
+      onMessageClear?.();
     }, duration);
 
     return () => clearTimeout(timer);
@@ -55,7 +51,7 @@ export default function AnimatedMessage({
 
   return (
     <AnimatePresence>
-      {show && (
+      {message && (
         <motion.div
           className={`
             fixed top-22 right-4 z-80
@@ -75,10 +71,7 @@ export default function AnimatedMessage({
           </p>
 
           <button
-            onClick={() => {
-              setShow(false);
-              setTimeout(() => onMessageClear?.(), 300);
-            }}
+            onClick={() => onMessageClear?.()}
             className="text-lg leading-none opacity-60 hover:opacity-100"
           >
             ✕

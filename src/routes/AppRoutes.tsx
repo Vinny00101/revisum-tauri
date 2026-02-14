@@ -26,7 +26,7 @@ export default function AppRoutes() {
             <Route index element={<Discipline />}/>
             <Route path=":id">
               <Route index element={<DisciplineDetail/>}/>
-              <Route path=":contextid" element={<Context/>}/>
+              <Route path=":contentid" element={<Context/>}/>
             </Route>
           </Route>
 

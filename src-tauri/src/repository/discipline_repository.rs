@@ -94,8 +94,14 @@ impl<'a> DisciplineRepository<'a> {
         id: i64,
         user_id: i64,
     ) -> Result<Option<Discipline>, AppError>{
+        let sql = r#"
+            SELECT d.id, d.user_id, d.name, d.description, d.created_at, d.updated_at, p.total_items, p.items_mastered, p.progress_percent, p.last_review_date
+            FROM discipline d
+            INNER JOIN discipline_progress p ON d.id = p.discipline_id
+            WHERE d.id = ? AND d.user_id = ?
+        "#;
         self.find_one(
-            "SELECT * FROM discipline WHERE id = ? AND user_id = ?", 
+            sql, 
             vec![JsonValue::from(id), JsonValue::from(user_id)],
         ).await
     }
@@ -104,8 +110,15 @@ impl<'a> DisciplineRepository<'a> {
         &self,
         user_id: i64,
     ) -> Result<Vec<Discipline>, AppError> {
+        let sql = r#" 
+            SELECT d.id, d.user_id, d.name, d.description, d.created_at, d.updated_at, p.total_items, p.items_mastered, p.progress_percent, p.last_review_date
+            FROM discipline d
+            INNER JOIN discipline_progress p ON d.id = p.discipline_id
+            WHERE d.user_id = ?
+            ORDER BY d.created_at DESC
+        "#;
         self.find_all(
-            "SELECT * FROM discipline WHERE user_id = ? ORDER BY created_at DESC", 
+            sql,
             vec![JsonValue::from(user_id)],
         ).await
     }

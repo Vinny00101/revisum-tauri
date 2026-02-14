@@ -2,14 +2,11 @@ import { contentColumns } from "@/components/content/contentColumns";
 import { Breadcrumb } from "@/components/dashboard/Breadcrumb";
 import ActionButtons from "@/components/discipline/ActionButtons";
 import ProgressBar from "@/components/discipline/Progress";
-import StatusBadge from "@/components/discipline/StatusBadge";
 import { DataTable } from "@/components/tables/DataTables";
 import { useSmartFilterSearch } from "@/components/tables/hooks/useBarTools";
 import { useToast } from "@/context/ToastContext";
-import { mapDisciplineToResponse } from "@/service/mappers/DisciplineMapper";
-import { DisciplineResponse } from "@/types/TypeInterface";
 import { number } from "framer-motion";
-import { BarChart3, BookOpen, Calendar, FileText, Filter, Plus, Search, Star } from "lucide-react";
+import { BarChart3, BookOpen, Calendar, FileText, Filter, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { contentFilters, contentSearch } from "@/components/content/contentTool";
@@ -17,13 +14,13 @@ import { get_discipline } from "@/tauri/discipline";
 import ModalDisciplina from "./ModalDiscipline";
 import ModalContent from "../content/ModalContent";
 import { get_all_content } from "@/tauri/content";
-import { Content } from "@/types/models";
+import { Content, Discipline } from "@/types/models";
 
 export default function DisciplineDetail() {
     const navigate = useNavigate();
     const { showToast } = useToast();
     const { id } = useParams();
-    const [discipline, setDiscipline] = useState<DisciplineResponse>();
+    const [discipline, setDiscipline] = useState<Discipline>();
     const [contents, setContents] = useState<Content[]>([]);
     const [isCreateContentModalOpen, setIsCreateContentModalOpen] = useState(false);
     const { filter, search, setFilter, setSearch, processedData } = useSmartFilterSearch(contents, contentFilters, "all", contentSearch);
@@ -55,12 +52,12 @@ export default function DisciplineDetail() {
 
             getContents(id_number);
 
-            setDiscipline(mapDisciplineToResponse(discipline.discipline!));
+            setDiscipline(discipline.discipline);
         } catch (err: any) {
             navigate("/disciplines");
             showToast({
                 type: "error",
-                message: "O identificador único da disciplina deve ser um número.",
+                message: "O identificador único da disciplina deve ser um número:" + err,
             });
         }
     };
@@ -124,14 +121,6 @@ export default function DisciplineDetail() {
                                             <h1 className="text-2xl font-bold text-gray-800">
                                                 {discipline.name}
                                             </h1>
-                                            {discipline.favorite && (
-                                                <span className="text-yellow-500">
-                                                    <Star className="fill-yellow-400" size={20} />
-                                                </span>
-                                            )}
-                                            <StatusBadge
-                                                lastStudied={discipline.lastStudied}
-                                            />
                                         </div>
 
                                         {discipline.description && (
@@ -144,7 +133,7 @@ export default function DisciplineDetail() {
                                     <div className="flex items-start justify-end gap-2">
                                         <ActionButtons
                                             disciplineId={discipline.id}
-                                            isFavorite={discipline.favorite}
+                                            isFavorite={false}
                                             onAction={(action, id) => {
                                                 if (action === "edit") setEditId(id);
                                                 if (action === "delete") setDeleteId(id);
@@ -171,7 +160,7 @@ export default function DisciplineDetail() {
                                 {/* Estatísticas Rápidas, Barra de Progresso, Botões de Ação */}
                                 <div className="w-full flex-wrap mt-6 border-t-2 border-gray-200">
                                     <div className="flex mt-6 flex-wrap gap-6">
-                                        <div className="flex items-center gap-2">
+                                        {/*<div className="flex items-center gap-2">
                                             <div className="p-2 bg-blue-50 rounded-lg">
                                                 <BookOpen size={35} className="text-blue-600" />
                                             </div>
@@ -181,15 +170,15 @@ export default function DisciplineDetail() {
                                                     {discipline.cardCount}
                                                 </p>
                                             </div>
-                                        </div>
+                                        </div>*/}
                                         <div className="flex items-center gap-2">
                                             <div className="p-2 bg-green-50 rounded-lg">
                                                 <FileText size={35} className="text-green-600" />
                                             </div>
                                             <div>
-                                                <p className="text-sm text-gray-500">Questões</p>
+                                                <p className="text-sm text-gray-500">Total de itens</p>
                                                 <p className="font-semibold text-gray-800">
-                                                    {discipline.questionCount}
+                                                    {discipline.total_items}
                                                 </p>
                                             </div>
                                         </div>
@@ -200,8 +189,8 @@ export default function DisciplineDetail() {
                                             <div>
                                                 <p className="text-sm text-gray-500">Último estudo</p>
                                                 <p className="font-semibold text-gray-800">
-                                                    {discipline.lastStudied
-                                                        ? new Date(discipline.lastStudied).toLocaleDateString('pt-BR')
+                                                    {discipline.last_review_date
+                                                        ? new Date(discipline.last_review_date).toLocaleDateString('pt-BR')
                                                         : 'Nunca'
                                                     }
                                                 </p>
@@ -210,7 +199,7 @@ export default function DisciplineDetail() {
 
                                         <div className="flex-1">
                                             <p>Progresso de revisão</p>
-                                            <ProgressBar progress={discipline.progress} />
+                                            <ProgressBar progress={discipline.progress_percent} />
                                         </div>
                                     </div>
                                 </div>

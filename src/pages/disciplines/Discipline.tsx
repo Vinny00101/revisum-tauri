@@ -5,8 +5,6 @@ import {
     Search,
 } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
-import { mapDisciplineToResponse } from "@/service/mappers/DisciplineMapper";
-import { DisciplineResponse } from "@/types/TypeInterface";
 import { DataTable } from "@/components/tables/DataTables";
 import { disciplineColumns } from "@/components/discipline/disciplinesColumns";
 import { disciplineFilters, disciplineSearch } from "@/components/discipline/disciplineTool";
@@ -14,9 +12,10 @@ import { useSmartFilterSearch } from "@/components/tables/hooks/useBarTools";
 import { get_all_discipline } from "@/tauri/discipline";
 import ModalDisciplina from "./ModalDiscipline";
 import { eventBus } from "@/util/Event";
+import { Discipline as DisciplineModel } from "@/types/models";
 
 export default function Discipline() {
-    const [disciplines, setDisciplines] = useState<DisciplineResponse[]>([]);
+    const [disciplines, setDisciplines] = useState<DisciplineModel[]>([]);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const { showToast } = useToast();
     const { filter, search, setFilter, setSearch, processedData } = useSmartFilterSearch(disciplines, disciplineFilters, "all", disciplineSearch);
@@ -26,8 +25,7 @@ export default function Discipline() {
         try {
             const result = await get_all_discipline();
             if (result.message.code && result.discipline) {
-                const adapted = result.discipline.map(mapDisciplineToResponse);
-                setDisciplines(adapted);
+                setDisciplines(result.discipline);
 
             } else {
                 showToast({ type: "error", message: result.message.message });
