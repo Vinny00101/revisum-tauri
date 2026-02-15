@@ -1,5 +1,5 @@
 import { Settings, Calendar, Clock, Award, Flame, Mail } from "lucide-react";
-import ModalUser from "./modalProfile";
+import ModalUser from "../components/modalProfile";
 import { useCallback, useEffect, useState } from "react";
 import { useToast } from "@/context/ToastContext";
 import { getCurrentUser } from "@/tauri/user";
@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { useTauri } from "@/context/TauriContext";
 
-export default function Profile() {
+export function Profile() {
   const navigate = useNavigate();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const {user, setUser } = useTauri();
