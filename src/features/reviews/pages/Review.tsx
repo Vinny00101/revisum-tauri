@@ -24,7 +24,7 @@ interface DueItem {
   lastReviewed?: Date;
 }
 
-export default function Review() {
+export function Review() {
   const [stats, setStats] = useState<ReviewStats>({
     totalToReview: 24,
     reviewedToday: 8,

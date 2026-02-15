@@ -2,7 +2,7 @@ import { Brain, Clock, RotateCw } from "lucide-react";
 import { useState } from "react";
 import { ReviewCard } from "./ReviewCard";
 
-export default function ReviewSession() {
+export function ReviewSession() {
   const [currentIndex, setCurrentIndex] = useState(0);
   
   const reviewItems = [
