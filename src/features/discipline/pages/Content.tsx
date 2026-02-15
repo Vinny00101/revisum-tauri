@@ -4,17 +4,17 @@ import {ModalStudyItem} from "../components/ModalStudyItem";
 import { useNavigate, useParams } from "react-router-dom";
 import { number } from "framer-motion";
 import { DataTable } from "@/components/tables/DataTables";
-import { studyItemColumns } from "@/components/studyItem/studyItemColumns";
+import { studyItemColumns } from "../components/studyItem/studyItemColumns";
 import { Content, StudyItemFullResponse } from "../types/interfaces";
 import { useSmartFilterSearch } from "@/components/tables/hooks/useBarTools";
-import { studyItemFilters, studyItemSearch } from "@/components/studyItem/studyItemTool";
+import { studyItemFilters, studyItemSearch } from "../components/studyItem/studyItemTool";
 import { useToast } from "@/context/ToastContext";
 import { get_content } from "@/features/discipline/tauri/content";
 import { get_all_study_item } from "@/features/discipline/tauri/studyItem";
 import { Breadcrumb } from "@/components/dashboard/Breadcrumb";
 
 
-export default function Context() {
+export function Context() {
     const { id, contentid } = useParams();
     const { showToast } = useToast();
     const [studyItem, setStudyItem] = useState<StudyItemFullResponse[]>([]);
