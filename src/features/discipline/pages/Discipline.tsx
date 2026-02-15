@@ -6,15 +6,15 @@ import {
 } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
 import { DataTable } from "@/components/tables/DataTables";
-import { disciplineColumns } from "@/components/discipline/disciplinesColumns";
-import { disciplineFilters, disciplineSearch } from "@/components/discipline/disciplineTool";
+import { disciplineColumns } from "../components/discipline/disciplinesColumns";
+import { disciplineFilters, disciplineSearch } from "../components/discipline/disciplineTool";
 import { useSmartFilterSearch } from "@/components/tables/hooks/useBarTools";
-import { get_all_discipline } from "@/tauri/discipline";
-import ModalDisciplina from "./ModalDiscipline";
+import { get_all_discipline } from "@/features/discipline/tauri/discipline";
+import {ModalDisciplina} from "../components/ModalDiscipline";
 import { eventBus } from "@/util/Event";
-import { Discipline as DisciplineModel } from "@/types/models";
+import { Discipline as DisciplineModel } from "../types/interfaces";
 
-export default function Discipline() {
+export function Discipline() {
     const [disciplines, setDisciplines] = useState<DisciplineModel[]>([]);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const { showToast } = useToast();

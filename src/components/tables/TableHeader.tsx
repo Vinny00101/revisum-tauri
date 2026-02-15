@@ -1,4 +1,4 @@
-import { Column } from "@/types/TypeInterface";
+import { Column } from "@/types/interfaces";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface Props<T> {

@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { User } from "@/types/models";
-import { message, UpdateUserRequest } from "@/types/TypeInterface";
+import { message, UpdateUserRequest } from "@/types/interfaces";
 import AuthStoreManager from "@/util/AuthStoreManager";
 
 

@@ -1,4 +1,4 @@
-import { Column } from "@/types/TypeInterface";
+import { Column } from "@/types/interfaces";
 
 interface Props<T> {
   data: T[];

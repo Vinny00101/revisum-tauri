@@ -1,5 +1,5 @@
-import { Content } from "@/types/models";
-import { Column } from "@/types/TypeInterface";
+import { Content } from "../../types/interfaces";
+import { Column } from "@/types/interfaces";
 import { File } from "lucide-react";
 import { NavLink } from "react-router-dom";
 

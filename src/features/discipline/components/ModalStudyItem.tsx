@@ -5,18 +5,12 @@ import { useToast } from "@/context/ToastContext";
 import {
     CreateStudyItemInput,
     CreateObjectiveAnswerInput,
-} from "@/types/TypeInterface";
-import { create_study_item } from "@/tauri/studyItem";
+} from "../types/interfaces";
+import { create_study_item } from "@/features/discipline/tauri/studyItem";
 import { QuestionType, StudyItemType } from "@/types/types";
+import { ModalStudyItemProps } from "../types/modal";
 
-interface ModalStudyItemProps {
-    contentId: number;
-    isOpen: boolean;
-    onClose: () => void;
-    reload: () => void;
-}
-
-export default function ModalStudyItem({
+export function ModalStudyItem({
     contentId,
     isOpen,
     onClose,

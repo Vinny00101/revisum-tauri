@@ -1,4 +1,4 @@
-import ModalDisciplina from "@/pages/disciplines/ModalDiscipline";
+import { ModalDisciplina } from "../ModalDiscipline";
 import ActionButtons from "./ActionButtons";
 import { useState } from "react";
 import { eventBus } from "@/util/Event";

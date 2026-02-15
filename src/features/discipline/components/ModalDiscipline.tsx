@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { X, BookText, Save, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/context/ToastContext";
-import { CreateDisciplineModalProps, DisciplineFormData } from "@/types/TypeInterface";
-import { create_discipline, delete_discipline, get_discipline, update_discipline } from "@/tauri/discipline";
+import { CreateDisciplineModalProps, DisciplineFormData } from "../types/modal";
+import { create_discipline, delete_discipline, get_discipline, update_discipline } from "@/features/discipline/tauri/discipline";
 
-export default function ModalDisciplina({
+export function ModalDisciplina({
     id,
     title,
     isOpen,

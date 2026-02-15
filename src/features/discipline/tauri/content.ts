@@ -1,5 +1,5 @@
-import { Content } from "@/types/models";
-import { message } from "@/types/TypeInterface";
+import { Content } from "../types/interfaces";
+import { message } from "@/types/interfaces";
 import AuthStoreManager from "@/util/AuthStoreManager";
 import { invoke } from "@tauri-apps/api/core";
 

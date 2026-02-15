@@ -1,5 +1,5 @@
 import { StudyItemFullResponse } from "@/types/models";
-import { Column } from "@/types/TypeInterface";
+import { Column } from "@/types/interfaces";
 import { StudyItemType } from "@/types/types";
 import { FileText, HelpCircle } from "lucide-react";
 

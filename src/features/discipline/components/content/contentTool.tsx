@@ -1,6 +1,6 @@
 
-import { ContentResponse} from "@/types/TypeInterface";
-import { FilterDefinition, SearchDefinition } from "../tables/hooks/useBarTools";
+import { FilterDefinition, SearchDefinition } from "@/components/tables/hooks/useBarTools";
+import { Content } from "../../types/interfaces";
 
 export type filterDiscipline = "all"
 
@@ -11,10 +11,10 @@ export const contentFilters = [
     apply: () => true,
   }
 ] as const satisfies readonly FilterDefinition<
-  ContentResponse,
+  Content,
   filterDiscipline
 >[];
 
-export const contentSearch: SearchDefinition<ContentResponse> = {
+export const contentSearch: SearchDefinition<Content> = {
     keys: ["title", "description"]
 };

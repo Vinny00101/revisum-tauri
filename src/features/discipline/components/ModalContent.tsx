@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { X, BookText, Save } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/context/ToastContext";
-import { CreateContentModalProps, ContentFormData } from "@/types/TypeInterface";
+import { CreateContentModalProps, ContentFormData } from "../types/modal";
 import OrderInput from "@/components/ui/orderInput";
-import { create_content } from "@/tauri/content";
+import { create_content } from "@/features/discipline/tauri/content";
 
 
-export default function ModalContent({
+export function ModalContent({
     id,
     disciplineId,
     title,

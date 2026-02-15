@@ -1,10 +1,10 @@
-import { Column } from "@/types/TypeInterface";
+import { Column } from "@/types/interfaces";
 import { BookOpen, Clock } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import ProgressBar from "./Progress";
 //import StatusBadge from "./StatusBadge";
 import ModalRender from "./ModalRender";
-import { Discipline } from "@/types/models";
+import { Discipline } from "../../types/interfaces";
 
 
 export const disciplineColumns: Column<Discipline>[] = [

@@ -1,12 +1,10 @@
 import ProtectedRoutes from "@/components/ProtectedRoute";
-import Context from "@/pages/content/Content";
+import { Login, Register } from "@/features/auth";
+import { Discipline, DisciplineDetail } from "@/features/discipline";
+import Context from "@/features/discipline/pages/Content";
 import DashboardLayout from "@/pages/DashboardLayout";
-import Discipline from "@/pages/disciplines/Discipline";
-import DisciplineDetail from "@/pages/disciplines/DisciplineDetail";
-import Login from "@/pages/Login";
 import DashboardMain from "@/pages/painel/DashboardMain";
 import Profile from "@/pages/profile/Profile";
-import Register from "@/pages/Register";
 import Review from "@/pages/reviews/Review";
 import ReviewSession from "@/pages/reviews/ReviewSession";
 import { Navigate, Route, Routes } from "react-router-dom";

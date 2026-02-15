@@ -1,7 +1,7 @@
-import { contentColumns } from "@/components/content/contentColumns";
+import { contentColumns } from "../components/content/contentColumns";
 import { Breadcrumb } from "@/components/dashboard/Breadcrumb";
-import ActionButtons from "@/components/discipline/ActionButtons";
-import ProgressBar from "@/components/discipline/Progress";
+import ActionButtons from "../components/discipline/ActionButtons";
+import ProgressBar from "../components/discipline/Progress";
 import { DataTable } from "@/components/tables/DataTables";
 import { useSmartFilterSearch } from "@/components/tables/hooks/useBarTools";
 import { useToast } from "@/context/ToastContext";
@@ -9,14 +9,14 @@ import { number } from "framer-motion";
 import { BarChart3, BookOpen, Calendar, FileText, Filter, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
-import { contentFilters, contentSearch } from "@/components/content/contentTool";
-import { get_discipline } from "@/tauri/discipline";
-import ModalDisciplina from "./ModalDiscipline";
-import ModalContent from "../content/ModalContent";
-import { get_all_content } from "@/tauri/content";
-import { Content, Discipline } from "@/types/models";
+import { contentFilters, contentSearch } from "../components/content/contentTool";
+import { get_discipline } from "@/features/discipline/tauri/discipline";
+import { ModalDisciplina } from "../components/ModalDiscipline";
+import {ModalContent} from "../components/ModalContent";
+import { get_all_content } from "../tauri/content";
+import { Content, Discipline } from "../types/interfaces";
 
-export default function DisciplineDetail() {
+export function DisciplineDetail() {
     const navigate = useNavigate();
     const { showToast } = useToast();
     const { id } = useParams();
