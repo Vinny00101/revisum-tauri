@@ -9,8 +9,8 @@ import { Content, StudyItemFullResponse } from "../types/interfaces";
 import { useSmartFilterSearch } from "@/components/tables/hooks/useBarTools";
 import { studyItemFilters, studyItemSearch } from "../components/studyItem/studyItemTool";
 import { useToast } from "@/context/ToastContext";
-import { get_content } from "@/features/discipline/tauri/content";
-import { get_all_study_item } from "@/features/discipline/tauri/studyItem";
+import { get_content } from "@/tauri/content";
+import { get_all_study_item } from "@/tauri/studyItem";
 import { Breadcrumb } from "@/components/dashboard/Breadcrumb";
 
 

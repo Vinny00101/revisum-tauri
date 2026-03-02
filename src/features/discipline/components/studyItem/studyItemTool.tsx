@@ -1,6 +1,5 @@
-import { StudyItemFullResponse } from "@/types/models";
-import { FilterDefinition, SearchDefinition } from "../tables/hooks/useBarTools";
-
+import { StudyItemFullResponse } from "../../types/interfaces";
+import { FilterDefinition, SearchDefinition } from "@/components/tables/hooks/useBarTools";
 
 export type StudyItemFilter =
   | "all"

@@ -10,10 +10,10 @@ import { BarChart3, BookOpen, Calendar, FileText, Filter, Plus, Search } from "l
 import { useEffect, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { contentFilters, contentSearch } from "../components/content/contentTool";
-import { get_discipline } from "@/features/discipline/tauri/discipline";
+import { get_discipline } from "@/tauri/discipline";
 import { ModalDisciplina } from "../components/ModalDiscipline";
 import {ModalContent} from "../components/ModalContent";
-import { get_all_content } from "../tauri/content";
+import { get_all_content } from "../../../tauri/content";
 import { Content, Discipline } from "../types/interfaces";
 
 export function DisciplineDetail() {

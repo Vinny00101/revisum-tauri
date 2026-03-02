@@ -2,9 +2,9 @@ import { Column } from "@/types/interfaces";
 import { BookOpen, Clock } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import ProgressBar from "./Progress";
-//import StatusBadge from "./StatusBadge";
 import ModalRender from "./ModalRender";
 import { Discipline } from "../../types/interfaces";
+import { formatDate } from "@/util/FormatData";
 
 
 export const disciplineColumns: Column<Discipline>[] = [
@@ -82,7 +82,7 @@ export const disciplineColumns: Column<Discipline>[] = [
       <div className="flex items-center gap-2">
         <Clock size={16} className="text-gray-400" />
         <span className="text-sm text-gray-700">
-          {d.last_review_date ?? "Nunca estudado"}
+          {d.last_review_date ? formatDate(d.last_review_date) : "Nunca estudado"}
         </span>
       </div>
     ),

@@ -6,7 +6,7 @@ import {
     CreateStudyItemInput,
     CreateObjectiveAnswerInput,
 } from "../types/interfaces";
-import { create_study_item } from "@/features/discipline/tauri/studyItem";
+import { create_study_item } from "@/tauri/studyItem";
 import { QuestionType, StudyItemType } from "@/types/types";
 import { ModalStudyItemProps } from "../types/modal";
 
@@ -121,6 +121,7 @@ export function ModalStudyItem({
                 showToast({ type: "error", message: result.message });
             } else {
                 showToast({ type: "success", message: result.message });
+                clearModal();
                 reload();
                 onClose();
             }
@@ -130,6 +131,19 @@ export function ModalStudyItem({
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const clearModal = () => {
+        setItemType(StudyItemType.CARD);
+        setQuestionType(QuestionType.OBJECTIVE);
+        setCardFront("");
+        setCardBack("");
+        setStatementText("");
+        setExpectedAnswer("");
+        setEvaluationCriteria("");
+        setObjectiveAnswers([]);
+        setPreview(null);
+        setImageFile(null);
     };
 
     return (

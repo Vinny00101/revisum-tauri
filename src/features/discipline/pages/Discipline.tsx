@@ -1,50 +1,21 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import {
     Filter,
     Plus,
     Search,
 } from "lucide-react";
-import { useToast } from "@/context/ToastContext";
 import { DataTable } from "@/components/tables/DataTables";
 import { disciplineColumns } from "../components/discipline/disciplinesColumns";
 import { disciplineFilters, disciplineSearch } from "../components/discipline/disciplineTool";
 import { useSmartFilterSearch } from "@/components/tables/hooks/useBarTools";
-import { get_all_discipline } from "@/features/discipline/tauri/discipline";
 import {ModalDisciplina} from "../components/ModalDiscipline";
-import { eventBus } from "@/util/Event";
-import { Discipline as DisciplineModel } from "../types/interfaces";
-
-export function Discipline() {
-    const [disciplines, setDisciplines] = useState<DisciplineModel[]>([]);
+import { useDisciplines } from "@/hooks/useDisciplines";
+export function DisciplinePage() {
+    const {disciplines, refresh } = useDisciplines();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const { showToast } = useToast();
     const { filter, search, setFilter, setSearch, processedData } = useSmartFilterSearch(disciplines, disciplineFilters, "all", disciplineSearch);
 
-    const getAllDiscipline = useCallback(async () => {
-
-        try {
-            const result = await get_all_discipline();
-            if (result.message.code && result.discipline) {
-                setDisciplines(result.discipline);
-
-            } else {
-                showToast({ type: "error", message: result.message.message });
-                setDisciplines([])
-            }
-        } catch (err: any) {
-            showToast({ type: "error", message: "Erro inesperado ao buscar disciplinas." });
-            console.error("Discipline error:", err);
-        }
-    },[showToast]);
-
-    useEffect(() => {
-        getAllDiscipline();
-        eventBus.on("discipline:updated", getAllDiscipline);
-
-        return () => {
-            eventBus.off("discipline:updated", getAllDiscipline);
-        }
-    }, [getAllDiscipline]);
+    
 
     return (
         <div>
@@ -104,7 +75,7 @@ export function Discipline() {
                 title="Nova Disciplina"
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
-                reloadTable={getAllDiscipline}
+                reloadTable={refresh}
             />
         </div>
     );

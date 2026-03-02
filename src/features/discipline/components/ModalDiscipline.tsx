@@ -3,7 +3,7 @@ import { X, BookText, Save, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/context/ToastContext";
 import { CreateDisciplineModalProps, DisciplineFormData } from "../types/modal";
-import { create_discipline, delete_discipline, get_discipline, update_discipline } from "@/features/discipline/tauri/discipline";
+import { create_discipline, delete_discipline, get_discipline, update_discipline } from "@/tauri/discipline";
 
 export function ModalDisciplina({
     id,
@@ -57,7 +57,8 @@ export function ModalDisciplina({
                 onClose();
             }
         } catch (error) {
-            showToast({ type: "error", message: "Erro ao criar disciplina" });
+            console.log("error");
+            showToast({ type: "error", message: "Erro ao criar disciplina: " + error });
         } finally {
             setIsSubmitting(false);
         }

@@ -1,8 +1,7 @@
-import { StudyItemFullResponse } from "@/types/models";
 import { message } from "@/types/interfaces";
 import AuthStoreManager from "@/util/AuthStoreManager";
 import { invoke } from "@tauri-apps/api/core";
-import { CreateStudyItemInput } from "../types/interfaces";
+import { CreateStudyItemInput, StudyItemFullResponse } from "../types/interfaces";
 
 export interface StudyItemAll{
     message: message;

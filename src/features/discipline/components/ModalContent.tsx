@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/context/ToastContext";
 import { CreateContentModalProps, ContentFormData } from "../types/modal";
 import OrderInput from "@/components/ui/orderInput";
-import { create_content } from "@/features/discipline/tauri/content";
+import { create_content } from "@/tauri/content";
 
 
 export function ModalContent({
