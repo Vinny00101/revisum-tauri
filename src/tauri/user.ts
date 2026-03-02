@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { User } from "@/types/models";
-import { message, UpdateUserRequest } from "@/types/TypeInterface";
+import { message, UpdateUserRequest } from "@/types/interfaces";
 import AuthStoreManager from "@/util/AuthStoreManager";
 
 
@@ -41,5 +41,12 @@ export async function updateUser(
     return await invoke<message>("update_user_command", {
       user_id: authdata?.user.id,
       update: updateData,
+    });
+}
+
+export async function get_review_log(): Promise<any> {
+    const authData = await AuthStoreManager.get();
+    return await invoke<any>("get_review_log_command", {
+        user_id: authData?.user.id,
     });
 }

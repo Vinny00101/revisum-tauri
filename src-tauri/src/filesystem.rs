@@ -5,7 +5,7 @@ use tauri::{AppHandle, Manager};
 use crate::error::app_error::AppError;
 
 pub struct AppPaths {
-    pub root: PathBuf,
+    //pub root: PathBuf,
     pub avatars: PathBuf,
     pub questions: PathBuf,
 }
@@ -16,7 +16,7 @@ impl AppPaths {
             .map_err(|e| AppError::Internal(format!("Falha ao obter AppData: {}", e)))?;
 
         Ok(Self {
-            root: app_dir.clone(), 
+            //root: app_dir.clone(), 
             avatars: app_dir.join("images").join("user").join("avatar"), 
             questions: app_dir.join("images").join("question"),
         })

@@ -70,14 +70,3 @@ CREATE TABLE IF NOT EXISTS discursive_response (
     evaluation_criteria TEXT,
     FOREIGN KEY (question_id) REFERENCES question (id) ON DELETE CASCADE
 );
-CREATE TABLE IF NOT EXISTS reviewlog (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    study_item_id INTEGER NOT NULL,
-    item_type TEXT NOT NULL CHECK(item_type IN ('CARD', 'QUESTION')),
-    evaluation TEXT NOT NULL CHECK(evaluation IN ('WRONG','CORRECT','EASY')),
-    time_spent INTEGER,
-    review_time TEXT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES user (id) ON DELETE CASCADE,
-    FOREIGN KEY (study_item_id) REFERENCES studyitem (id) ON DELETE CASCADE
-);

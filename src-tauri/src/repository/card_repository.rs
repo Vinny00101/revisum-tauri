@@ -17,6 +17,7 @@ impl<'a> CardRepository<'a> {
     pub fn new(state: State<'a, DbStore>) -> Self {
         Self { state }
     }
+    #[allow(dead_code)]
 
     pub async fn update_card_tx(
         &self,

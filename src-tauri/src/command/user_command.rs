@@ -2,7 +2,7 @@ use tauri::{command, State};
 
 
 use crate::{
-    db::config::DbStore, filesystem::AppPaths, service::{dto::{message_response::Message, user_response::UpdateUserRes}, service_factory::ServiceFactory, user_service::Auth}
+    db::config::DbStore, filesystem::AppPaths, service::{dto::{message_response::Message, user_response::UpdateUserRes}, service_factory::ServiceFactory, user_service::{Auth, ReviewlogResponse}}
 };
 
 
@@ -50,3 +50,13 @@ pub async fn authentication_user_command(
 
     service.authentication_user(username, password).await.map_err(|e|e.to_frontend())
 }
+
+#[command(rename_all = "snake_case")]
+pub async fn get_review_log_command(
+    state: State<'_, DbStore>,
+    user_id: i64,
+) -> Result<ReviewlogResponse, String>{
+    let service = ServiceFactory::user(state);
+
+    service.get_review_log(user_id).await.map_err(|e|e.to_frontend())
+}   

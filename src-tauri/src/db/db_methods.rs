@@ -228,6 +228,7 @@ where
 
     Ok(items)
 }
+*/
 
 pub async fn db_select_one_tx<T>(
     tx: &mut Transaction<'_, Sqlite>,
@@ -259,7 +260,6 @@ where
         None => Ok(None),
     }
 }
-*/
 
  pub async fn db_begin_tx<'a>(
     state: &'a State<'_, DbStore>,

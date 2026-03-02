@@ -1,4 +1,5 @@
 import "./App.css";
+import ScrollToTop from "./components/ScrollTop";
 import { TauriProvider } from "./context/TauriContext";
 import { ToastProvider } from "./context/ToastContext";
 import AppLayout from "./layouts/AppLayout";
@@ -9,6 +10,7 @@ function App() {
     <TauriProvider>
       <ToastProvider>
           <AppLayout>
+            <ScrollToTop/>
             <AppRoutes />
           </AppLayout>
       </ToastProvider>

@@ -1,4 +1,4 @@
-import { Column } from "@/types/TypeInterface";
+import { Column } from "@/types/interfaces";
 import { TableHeader } from "./TableHeader";
 import { useTableSort } from "./hooks/useTableSort";
 import { TableBody } from "./TableBody";

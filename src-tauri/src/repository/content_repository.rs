@@ -104,6 +104,16 @@ impl<'a> ContentRepository<'a> {
         ).await
     }
 
+    pub async fn get_content_by_id(
+        &self,
+        id: i64,
+    ) -> Result<Option<Content>, AppError>{
+        self.find_one(
+            "SELECT * FROM content WHERE id = ?", 
+            vec![JsonValue::from(id)],
+        ).await
+    }
+
     pub async fn get_all_content(
         &self,
         discipline_id: i64,
@@ -114,6 +124,15 @@ impl<'a> ContentRepository<'a> {
         ).await
     }
 
+    pub async fn get_all_content_user(
+        &self,
+        user_id: i64,
+    ) -> Result<Vec<Content>, AppError> {
+        self.find_all(
+            "SELECT c.* FROM content c JOIN discipline d ON c.discipline_id = d.id WHERE d.user_id = ? ORDER BY c.display_order ASC",
+            vec![JsonValue::from(user_id)],
+        ).await
+    }
     pub async fn exists_by_title(
         &self,
         discipline_id: i64,

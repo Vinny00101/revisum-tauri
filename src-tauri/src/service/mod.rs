@@ -4,3 +4,4 @@ pub mod discipline_service;
 pub mod content_service;
 pub mod dto;
 pub mod study_item_service;
+pub mod review_service;

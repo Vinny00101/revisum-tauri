@@ -7,8 +7,8 @@ use crate::{
     },
     error::app_error::AppError,
     filesystem::AppPaths,
-    model::user::UpdateUser,
-    repository::{user_repository::UserRepository, user_status_repository::UserStatusRepository},
+    model::{reviewlog::Reviewlog, user::UpdateUser},
+    repository::{reviewlog_repository::ReviewLogRepository, user_repository::UserRepository, user_status_repository::UserStatusRepository},
     service::dto::{
         message_response::Message,
         user_response::{UpdateUserRes, UserResponse},
@@ -27,19 +27,29 @@ pub struct Auth {
     pub user: Option<UserResponse>,
 }
 
+#[derive(serde::Serialize)]
+pub struct ReviewlogResponse{
+    pub code: bool,
+    pub message: String,
+    pub reviewlog: Option<Vec<Reviewlog>>,
+}
+
 pub struct UserService<'a> {
     user_repository: UserRepository<'a>,
     user_status_repository: UserStatusRepository<'a>,
+    review_log_repository: ReviewLogRepository<'a>,
 }
 
 impl<'a> UserService<'a> {
     pub fn new(
         user_repository: UserRepository<'a>,
         user_status_repository: UserStatusRepository<'a>,
+        review_log_repository: ReviewLogRepository<'a>,
     ) -> Self {
         Self {
             user_repository,
             user_status_repository,
+            review_log_repository,
         }
     }
 
@@ -253,12 +263,15 @@ impl<'a> UserService<'a> {
         }
 
         let user = self.user_repository.get_user_by_id(user_id).await?
-            .map(|u| UserResponse::from(&u));
+            .ok_or("Usuário não encontrado")?;
+        let status = self.user_status_repository.get_by_user_id(user_id).await?;
+
+        let result = UserResponse::new(&user, status);
 
         Ok(Auth {
             code: true,
             message: "Busca efetuada com sucesso".into(),
-            user: user,
+            user: Some(result),
         })
     }
 
@@ -293,13 +306,33 @@ impl<'a> UserService<'a> {
                 user: None,
             });
         }
-
-        let result = UserResponse::from(&user_result);
+        let status = self.user_status_repository.get_by_user_id(user_result.id).await?;
+        let result = UserResponse::new(&user_result, status);
 
         Ok(Auth {
             code: true,
             message: "Logado com sucesso".into(),
             user: Some(result),
+        })
+    }
+
+    pub async fn get_review_log(
+        &self,
+        user_id: i64,
+    ) -> Result<ReviewlogResponse, AppError> {
+        if !self.user_repository.exists_by_id(user_id).await? {
+            return Ok(ReviewlogResponse {
+                code: false,
+                message: "user_id não foi encontrado".into(),
+                reviewlog: None,
+            });
+        }
+
+        let result = self.review_log_repository.get_reviewlog_by_user(user_id).await?;
+        Ok(ReviewlogResponse { 
+            code: true, 
+            message: "Busca efetuada com sucesso".into(),
+            reviewlog: Some(result)
         })
     }
 }

@@ -4,7 +4,7 @@ use sqlx::{FromRow, Sqlite, Transaction, sqlite::SqliteRow};
 use tauri::State;
 use serde_json::Value as JsonValue;
 
-use crate::{db::{config::DbStore, db_methods::{ExecuteResult, db_execute, db_execute_tx, db_exists, db_select_many, db_select_one}}, error::app_error::AppError};
+use crate::{db::{config::DbStore, db_methods::{ExecuteResult, db_execute, db_execute_tx, db_exists, db_select_many, db_select_one, db_select_one_tx}}, error::app_error::AppError};
 
 
 #[async_trait::async_trait]
@@ -38,6 +38,7 @@ where
     ) -> Result<Vec<T>, AppError>{
         db_select_many_tx::<T>(tx, sql, values).await
     }
+    */
 
     async fn find_one_tx(
         &self,
@@ -47,7 +48,7 @@ where
     ) -> Result<Option<T>, AppError>{
         db_select_one_tx::<T>(tx, sql, values).await
     }
-    */
+    
 }
 
 #[async_trait::async_trait]

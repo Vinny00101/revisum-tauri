@@ -1,4 +1,4 @@
-import { ArrowBigDown, ArrowBigUp } from "lucide-react";
+import {ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface OrderInputProps {
@@ -33,7 +33,7 @@ export default function OrderInput({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value;
-    
+
     // Permite campo vazio temporariamente
     if (rawValue === "") {
       setInputValue("");
@@ -42,20 +42,20 @@ export default function OrderInput({
 
     // Remove caracteres não numéricos
     const numericValue = rawValue.replace(/\D/g, "");
-    
+
     if (numericValue === "") {
       setInputValue("");
       return;
     }
 
     let num = parseInt(numericValue, 10);
-    
+
     // Aplica limites
     if (num < min) num = min;
     if (max !== undefined && num > max) num = max;
-    
+
     setInputValue(num.toString());
-    
+
     // Notifica o componente pai apenas quando o valor é válido
     if (!isNaN(num) && num >= min && (max === undefined || num <= max)) {
       onChange(num);
@@ -83,7 +83,7 @@ export default function OrderInput({
   };
 
   return (
-     <div className={`space-y-3 ${className}`}>
+    <div className={`space-y-3 ${className}`}>
       {label && (
         <div className="flex flex-col">
           <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
@@ -94,7 +94,7 @@ export default function OrderInput({
           </span>
         </div>
       )}
-      
+
       <div className="relative group">
         {/* Input principal */}
         <input
@@ -110,33 +110,29 @@ export default function OrderInput({
           aria-label={label}
         />
 
-        {/* Botões na direita */}
-        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col h-[calc(100%-0.5rem)] w-10">
-          {/* Botão de incremento - TOPO */}
+        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col h-[calc(100%-8px)] w-10 overflow-hidden rounded-md shadow-sm">
+          {/* Botão de incremento */}
           <button
             type="button"
             onClick={increment}
             disabled={disabled || (max !== undefined && (value || min) >= max)}
-            className="flex-1 flex items-center justify-center rounded-t-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 active:scale-95 group/increment"
-            aria-label="Aumentar ordem"
-            title="Aumentar (↑)"
+            className="flex-1 flex items-center justify-center bg-slate-800 hover:bg-slate-600 text-white hover:bg-slate-70 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+            aria-label="Aumentar"
           >
-            <ArrowBigUp size={15} />
+            <ChevronUp size={18} strokeWidth={3} />
           </button>
 
-          {/* Divisor sutil */}
-          <div className="h-px bg-gray-300 dark:bg-gray-600" />
+          <div className="h-px bg-slate-600/20 dark:bg-slate-400/20" />
 
-          {/* Botão de decremento - BASE */}
+          {/* Botão de decremento */}
           <button
             type="button"
             onClick={decrement}
             disabled={disabled || (value || min) <= min}
-            className="flex-1 flex items-center justify-center rounded-b-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 active:scale-95 group/decrement"
-            aria-label="Diminuir ordem"
-            title="Diminuir (↓)"
+            className="flex-1 flex items-center justify-center bg-slate-80 bg-slate-800 text-white hover:bg-slate-600  disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+            aria-label="Diminuir"
           >
-            <ArrowBigDown size={15}/>
+            <ChevronDown size={18} strokeWidth={3} />
           </button>
         </div>
 
@@ -156,10 +152,10 @@ export default function OrderInput({
         <div className="space-y-2">
           {/* Barra de progresso visual */}
           <div className="relative h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-            <div 
+            <div
               className="absolute top-0 left-0 h-full bg-blue-500 dark:bg-blue-400 transition-all duration-300"
-              style={{ 
-                width: `${Math.min(100, ((value || min) / (max || 100)) * 100)}%` 
+              style={{
+                width: `${Math.min(100, ((value || min) / (max || 100)) * 100)}%`
               }}
             />
           </div>
@@ -169,7 +165,7 @@ export default function OrderInput({
             <span className="text-gray-500 font-medium">
               Atualmente: <span>Posição #{value || min}</span>
             </span>
-            
+
             <div className="flex items-center space-x-1">
               <span className="text-gray-500">de</span>
               <span className="font-semibold text-gray-500">{max || "∞"}</span>

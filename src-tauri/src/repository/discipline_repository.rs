@@ -1,11 +1,28 @@
+use serde::{Deserialize, Serialize};
+use sqlx::{Sqlite, Transaction, prelude::FromRow};
 use tauri::State;
 
-use crate::{db::{config::DbStore, db_methods::ExecuteResult}, error::app_error::AppError, model::discipline::{Discipline, UpdateDiscipline}, repository::base_repository::{EntityRepository, MutationRepository, QueryRepository}};
+use crate::{
+    db::{config::DbStore, db_methods::ExecuteResult},
+    error::app_error::AppError,
+    model::discipline::{Discipline, UpdateDiscipline},
+    repository::base_repository::{EntityRepository, MutationRepository, QueryRepository},
+};
 use serde_json::Value as JsonValue;
 
-pub(crate) struct DisciplineRepository<'a>{
+pub(crate) struct DisciplineRepository<'a> {
     state: State<'a, DbStore>,
-} 
+}
+
+#[derive(Debug, FromRow, Serialize, Deserialize)]
+pub struct DisciplineIdLookup {
+    pub discipline_id: i64,
+}
+
+#[derive(Debug, FromRow, Serialize, Deserialize)]
+pub struct CountLookup {
+    pub total: i64,
+}
 
 impl<'a> DisciplineRepository<'a> {
     pub fn new(state: State<'a, DbStore>) -> Self {
@@ -17,11 +34,8 @@ impl<'a> DisciplineRepository<'a> {
         user_id: i64,
         name: String,
         description: Option<String>,
-    ) -> Result<ExecuteResult ,AppError>{
-        let mut values = vec![
-            JsonValue::from(user_id),
-            JsonValue::String(name),
-        ];
+    ) -> Result<ExecuteResult, AppError> {
+        let mut values = vec![JsonValue::from(user_id), JsonValue::String(name)];
 
         values.push(match description {
             Some(desc) => JsonValue::String(desc),
@@ -43,7 +57,7 @@ impl<'a> DisciplineRepository<'a> {
         user_id: i64,
         discipline_id: i64,
         update: UpdateDiscipline,
-    ) -> Result<ExecuteResult, AppError>{
+    ) -> Result<ExecuteResult, AppError> {
         let mut fields = Vec::new();
         let mut values = Vec::new();
 
@@ -72,12 +86,9 @@ impl<'a> DisciplineRepository<'a> {
             fields.join(","),
         );
 
-        self.execute(
-            &query, 
-            values
-        ).await
+        self.execute(&query, values).await
     }
-    
+
     pub async fn delete_discipline(
         &self,
         user_id: i64,
@@ -85,29 +96,35 @@ impl<'a> DisciplineRepository<'a> {
     ) -> Result<ExecuteResult, AppError> {
         self.execute(
             "DELETE FROM discipline WHERE id = ? AND user_id = ?",
-            vec![JsonValue::from(discipline_id),JsonValue::from(user_id)],
-        ).await
+            vec![JsonValue::from(discipline_id), JsonValue::from(user_id)],
+        )
+        .await
     }
     // get_discipline
     pub async fn get_discipline(
         &self,
         id: i64,
         user_id: i64,
-    ) -> Result<Option<Discipline>, AppError>{
-        self.find_one(
-            "SELECT * FROM discipline WHERE id = ? AND user_id = ?", 
-            vec![JsonValue::from(id), JsonValue::from(user_id)],
-        ).await
+    ) -> Result<Option<Discipline>, AppError> {
+        let sql = r#"
+            SELECT d.id, d.user_id, d.name, d.description, d.created_at, d.updated_at, p.total_items, p.items_mastered, p.progress_percent, p.last_review_date
+            FROM discipline d
+            INNER JOIN discipline_progress p ON d.id = p.discipline_id
+            WHERE d.id = ? AND d.user_id = ?
+        "#;
+        self.find_one(sql, vec![JsonValue::from(id), JsonValue::from(user_id)])
+            .await
     }
     // get_all_discipline
-    pub async fn get_all_discipline(
-        &self,
-        user_id: i64,
-    ) -> Result<Vec<Discipline>, AppError> {
-        self.find_all(
-            "SELECT * FROM discipline WHERE user_id = ? ORDER BY created_at DESC", 
-            vec![JsonValue::from(user_id)],
-        ).await
+    pub async fn get_all_discipline(&self, user_id: i64) -> Result<Vec<Discipline>, AppError> {
+        let sql = r#" 
+            SELECT d.id, d.user_id, d.name, d.description, d.created_at, d.updated_at, p.total_items, p.items_mastered, p.progress_percent, p.last_review_date
+            FROM discipline d
+            INNER JOIN discipline_progress p ON d.id = p.discipline_id
+            WHERE d.user_id = ?
+            ORDER BY d.created_at DESC
+        "#;
+        self.find_all(sql, vec![JsonValue::from(user_id)]).await
     }
     // exists_name_discipline
     pub async fn exists_name_discipline(
@@ -116,37 +133,122 @@ impl<'a> DisciplineRepository<'a> {
         name: String,
     ) -> Result<bool, AppError> {
         self.exists(
-            "SELECT 1 FROM discipline WHERE user_id = ? AND name = ? LIMIT 1", 
-            vec![JsonValue::from(user_id),JsonValue::String(name)],
-        ).await
+            "SELECT 1 FROM discipline WHERE user_id = ? AND name = ? LIMIT 1",
+            vec![JsonValue::from(user_id), JsonValue::String(name)],
+        )
+        .await
     }
     // exists_by_id
-    pub async fn exists_by_id(
-        &self,
-        id: i64,
-        user_id: i64,
-    ) -> Result<bool, AppError>{
+    pub async fn exists_by_id(&self, id: i64, user_id: i64) -> Result<bool, AppError> {
         self.exists(
-            "SELECT 1 FROM discipline WHERE user_id = ? AND id = ? LIMIT 1", 
+            "SELECT 1 FROM discipline WHERE user_id = ? AND id = ? LIMIT 1",
             vec![JsonValue::from(user_id), JsonValue::from(id)],
-        ).await
+        )
+        .await
+    }
+
+    pub async fn discipline_progress_update_tx(
+        &self,
+        tx: &mut Transaction<'_, Sqlite>,
+        user_id: i64,
+        study_item_id: i64,
+        evaluation: String,
+    ) -> Result<(), AppError> {
+        let now = chrono::Utc::now().to_rfc3339();
+        
+        let discipline_row: Option<DisciplineIdLookup> = self.find_one_tx(
+            tx,
+            "SELECT c.discipline_id FROM studyitem s 
+            JOIN content c ON s.content_id = c.id 
+            WHERE s.id = ?",
+            vec![JsonValue::from(study_item_id)],
+        ).await?;
+
+        if let Some(data) = discipline_row {
+            let discipline_id = data.discipline_id; // Acesso direto, sem .get()
+            
+            let total_positive_hits: i64 = {
+                let count_res: Option<CountLookup> = self.find_one_tx(
+                    tx,
+                    "SELECT COUNT(*) as total FROM reviewlog 
+                     WHERE study_item_id = ? 
+                     AND evaluation IN ('CORRECT', 'EASY', 'MEDIUM')",
+                    vec![JsonValue::from(study_item_id)],
+                ).await?;
+                count_res.map(|v| v.total).unwrap_or(0)
+            };
+
+            let is_positive_now = matches!(evaluation.as_str(), "CORRECT" | "EASY" | "MEDIUM");
+
+            // Lógica ajustada:
+            let increment = if is_positive_now && total_positive_hits >= 1 {    
+                1  // É o primeiro acerto de todos (acabou de ser inserido)
+            } else if !is_positive_now && total_positive_hits == 0 {
+                0  // Errou e continua sem nenhum acerto
+            } else if !is_positive_now && total_positive_hits > 0 {
+                -1 
+            } else {
+                0
+            };
+            // C. Update Itens Masterizados e Data
+            self.execute_tx(
+                tx,
+                "UPDATE discipline_progress 
+             SET items_mastered = MAX(0, items_mastered + ?), 
+                 last_review_date = ?
+             WHERE user_id = ? AND discipline_id = ?",
+                vec![
+                    JsonValue::from(increment),
+                    JsonValue::String(now),
+                    JsonValue::from(user_id),
+                    JsonValue::from(discipline_id),
+                ],
+            ).await?;
+
+            // D. Update Porcentagem
+            self.execute_tx(
+                tx,
+                "UPDATE discipline_progress 
+             SET progress_percent = ROUND((CAST(items_mastered AS REAL) * 100.0) / MAX(total_items, 1), 2)
+             WHERE user_id = ? AND discipline_id = ?",
+                vec![
+                    JsonValue::from(user_id), 
+                    JsonValue::from(discipline_id)
+                ],
+            ).await?;
+        }
+
+        Ok(())
     }
 }
 
 impl<'a> MutationRepository for DisciplineRepository<'a> {
-    fn get_state(&self) ->  &State<'_,DbStore> {
+    fn get_state(&self) -> &State<'_, DbStore> {
         &self.state
     }
 }
 
-impl<'a> QueryRepository for  DisciplineRepository<'a> {
-    fn get_state(&self) ->  &State<'_,DbStore> {
+impl<'a> QueryRepository for DisciplineRepository<'a> {
+    fn get_state(&self) -> &State<'_, DbStore> {
         &self.state
     }
 }
 
 impl<'a> EntityRepository<Discipline> for DisciplineRepository<'a> {
-    fn get_state(&self) ->  &State<'_,DbStore> {
+    fn get_state(&self) -> &State<'_, DbStore> {
+        &self.state
+    }
+}
+
+impl<'a> EntityRepository<DisciplineIdLookup> for DisciplineRepository<'a> {
+    fn get_state(&self) -> &State<'_, DbStore> {
+        &self.state
+    }
+}
+
+
+impl<'a> EntityRepository<CountLookup> for DisciplineRepository<'a> {
+    fn get_state(&self) -> &State<'_, DbStore> {
         &self.state
     }
 }
