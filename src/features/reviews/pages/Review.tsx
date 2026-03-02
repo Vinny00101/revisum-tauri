@@ -1,6 +1,11 @@
-import { Brain, Calendar, Clock, TrendingUp, Target, Award, BookOpen, CheckCircle, BarChart3, Sparkles } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Brain, Calendar, Clock, TrendingUp, Target, Award, CheckCircle, BarChart3, Search } from "lucide-react";
 import { useState } from "react";
+import { disciplineSearch } from "@/features/discipline";
+import { useSmartFilterSearch } from "@/components/tables/hooks/useBarTools";
+import { useDisciplines } from "@/hooks/useDisciplines";
+import { useContent } from "@/hooks/useContent";
+import { ReviewTable } from "../components/ReviewTable";
+import { contentColumnsReviews } from "../components/contentColumnsReviews";
 
 interface ReviewStats {
   totalToReview: number;
@@ -13,19 +18,13 @@ interface ReviewStats {
   };
 }
 
-interface DueItem {
-  id: number;
-  title: string;
-  type: "card" | "question";
-  discipline: string;
-  content: string;
-  dueDate: Date;
-  difficulty: "easy" | "medium" | "hard";
-  lastReviewed?: Date;
-}
-
 export function Review() {
-  const [stats, setStats] = useState<ReviewStats>({
+  const { disciplines } = useDisciplines();
+  const { content, fetchContentByDiscipline, refreshAll } = useContent();
+  const { search, setSearch, processedData, isSearchActive } = useSmartFilterSearch(disciplines, [], "all", disciplineSearch);
+  const [selectionSearch, setSelectionSearch] = useState(String);
+
+  const [stats, _setStats] = useState<ReviewStats>({
     totalToReview: 24,
     reviewedToday: 8,
     streak: 7,
@@ -33,33 +32,16 @@ export function Review() {
     nextReview: { count: 12, time: "2h" }
   });
 
-  const [dueItems, setDueItems] = useState<DueItem[]>([
-    {
-      id: 1,
-      title: "Funções Quadráticas",
-      type: "card",
-      discipline: "Matemática",
-      content: "Funções",
-      dueDate: new Date(),
-      difficulty: "hard",
-      lastReviewed: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
-    },
-    {
-      id: 2,
-      title: "Concordância Verbal",
-      type: "question",
-      discipline: "Português",
-      content: "Sintaxe",
-      dueDate: new Date(),
-      difficulty: "medium"
-    },
-    // ... mais itens
-  ]);
+  const handleSelectDiscipline = (discipline: any) => {
+    setSearch(discipline.name);
+    setSelectionSearch(discipline.name);
+    fetchContentByDiscipline(discipline.id);
+  };
 
   return (
     <div>
       <div>
-        
+
         {/* Header com saudação */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -71,7 +53,7 @@ export function Review() {
               Mantenha o conhecimento fresco com revisões espaçadas
             </p>
           </div>
-          
+
           <div className="flex items-center gap-3 bg-white px-5 py-3 rounded-2xl shadow-sm border border-gray-200">
             <div className="flex items-center gap-2">
               <Calendar size={18} className="text-blue-500" />
@@ -96,7 +78,7 @@ export function Review() {
             <h3 className="text-2xl font-bold text-gray-900">{stats.totalToReview}</h3>
             <p className="text-sm text-gray-600 mt-1">Itens para revisar</p>
             <div className="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-              <div 
+              <div
                 className="h-full bg-linear-to-r from-orange-500 to-orange-400 rounded-full"
                 style={{ width: `${(stats.reviewedToday / stats.totalToReview) * 100}%` }}
               />
@@ -116,13 +98,12 @@ export function Review() {
             <p className="text-sm text-gray-600 mt-1">Sequência de estudos</p>
             <div className="mt-3 flex items-center gap-1">
               {[...Array(7)].map((_, i) => (
-                <div 
+                <div
                   key={i}
-                  className={`h-2 flex-1 rounded-full ${
-                    i < stats.streak % 7 
-                      ? 'bg-linear-to-r from-green-500 to-green-400' 
-                      : 'bg-gray-200'
-                  }`}
+                  className={`h-2 flex-1 rounded-full ${i < stats.streak % 7
+                    ? 'bg-linear-to-r from-green-500 to-green-400'
+                    : 'bg-gray-200'
+                    }`}
                 />
               ))}
             </div>
@@ -141,7 +122,7 @@ export function Review() {
             <p className="text-sm text-gray-600 mt-1">Taxa de acerto</p>
             <div className="mt-3 flex items-center gap-2">
               <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                <div 
+                <div
                   className="h-full bg-linear-to-r from-blue-500 to-blue-400 rounded-full"
                   style={{ width: `${stats.accuracy}%` }}
                 />
@@ -165,91 +146,87 @@ export function Review() {
           </div>
         </div>
 
-        {/* Próximas revisões e recomendações */}
+        {/*  */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Lista de itens para revisar */}
+          {/* tabela com conteudos para revisao */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                   <Clock size={20} className="text-orange-500" />
                   Revisões Pendentes
                   <span className="px-2 py-0.5 bg-orange-50 text-orange-700 text-xs font-medium rounded-full border border-orange-200">
-                    {dueItems.length}
+                    {content.length}
                   </span>
                 </h2>
-                <Link 
-                  to="/review/session" 
-                  className="px-4 py-2 bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-medium rounded-xl shadow-sm shadow-blue-200 hover:shadow-md transition-all duration-200 flex items-center gap-2"
-                >
-                  <Sparkles size={16} />
-                  Iniciar revisão
-                </Link>
+                {/* Botão para resetar o filtro */}
+                <button onClick={() => {
+                  refreshAll();
+                  setSearch('');
+                } } className="text-xs text-blue-600 hover:underline">
+                  Limpar filtros
+                </button>
               </div>
 
+              {/* Search */}
+
+              <div className="flex-1 relative mb-6">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="text"
+                    placeholder="Pesquisar disciplinas para filtrar conteudos..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                  />
+                </div>
+
+                {/* Dropdown de Resultados da Busca */}
+                {isSearchActive && search !== selectionSearch && (
+                  <div className="absolute z-10 w-full mt-2 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                    {processedData.length > 0 ? (
+                      <div className="max-h-60 overflow-y-auto">
+                        {processedData.map((disc) => (
+                          <button
+                            key={disc.id}
+                            onClick={() => handleSelectDiscipline(disc)}
+                            className="w-full text-left px-4 py-3 hover:bg-blue-50 text-sm text-gray-700 flex items-center justify-between group"
+                          >
+                            <span>{disc.name}</span>
+                            <span className="text-xs text-blue-500 opacity-0 group-hover:opacity-100">Selecionar</span>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-4 text-center text-gray-500 text-sm">
+                        Nenhuma disciplina encontrada.
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              {/* Conteúdos para conteudos */}
               <div className="space-y-3">
-                {dueItems.map((item) => (
-                  <Link
-                    key={item.id}
-                    to={`/reviews/${item.id}`}
-                    className="block p-4 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50/30 transition-all duration-200 group"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                        item.type === 'card' 
-                          ? 'bg-purple-100 text-purple-600' 
-                          : 'bg-green-100 text-green-600'
-                      }`}>
-                        {item.type === 'card' ? <BookOpen size={20} /> : <CheckCircle size={20} />}
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
-                            {item.title}
-                          </h3>
-                          <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                            item.difficulty === 'hard' 
-                              ? 'bg-red-50 text-red-700 border border-red-200'
-                              : item.difficulty === 'medium'
-                              ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
-                              : 'bg-green-50 text-green-700 border border-green-200'
-                          }`}>
-                            {item.difficulty === 'hard' ? 'Difícil' : item.difficulty === 'medium' ? 'Médio' : 'Fácil'}
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center gap-3 text-xs text-gray-500">
-                          <span>{item.discipline}</span>
-                          <span>•</span>
-                          <span>{item.content}</span>
-                          {item.lastReviewed && (
-                            <>
-                              <span>•</span>
-                              <span>Revisado há {Math.floor((Date.now() - item.lastReviewed.getTime()) / (1000 * 60 * 60 * 24))} dias</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
 
-                      <div className="text-xs text-gray-400 group-hover:text-blue-500">
-                        Revisar →
-                      </div>
-                    </div>
-                  </Link>
-                ))}
+                <ReviewTable
+                  data={content}
+                  columns={contentColumnsReviews}
+                  pageSize={5}
+                />
               </div>
 
-              {dueItems.length === 0 && (
+              {content.length === 0 && (
                 <div className="text-center py-12">
                   <div className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-4">
                     <CheckCircle size={32} className="text-green-600" />
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Tudo em dia! 🎉
+                    Nenhum conteudo foi adicionado ainda.
                   </h3>
                   <p className="text-gray-500">
-                    Você não tem nenhuma revisão pendente no momento.
+                    Comece adicionado na seção de disciplinas.
                   </p>
                 </div>
               )}
@@ -264,7 +241,7 @@ export function Review() {
                 <BarChart3 size={18} className="text-blue-500" />
                 Progresso por disciplina
               </h3>
-              
+
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between text-sm mb-1">
@@ -275,7 +252,7 @@ export function Review() {
                     <div className="h-full w-3/4 bg-linear-to-r from-blue-500 to-blue-400 rounded-full" />
                   </div>
                 </div>
-                
+
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-gray-600">Português</span>
@@ -285,7 +262,7 @@ export function Review() {
                     <div className="h-full w-2/5 bg-linear-to-r from-green-500 to-green-400 rounded-full" />
                   </div>
                 </div>
-                
+
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-gray-600">História</span>
@@ -323,18 +300,18 @@ export function Review() {
                   20 itens
                 </span>
               </div>
-              
+
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-gray-600">Progresso</span>
                 <span className="text-sm font-medium text-gray-900">{stats.reviewedToday}/20</span>
               </div>
               <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden mb-4">
-                <div 
+                <div
                   className="h-full bg-linear-to-r from-blue-500 to-blue-400 rounded-full"
                   style={{ width: `${(stats.reviewedToday / 20) * 100}%` }}
                 />
               </div>
-              
+
               <button className="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2">
                 <Calendar size={16} />
                 Ajustar meta

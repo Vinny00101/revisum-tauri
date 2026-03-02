@@ -6,7 +6,8 @@ use command::{
         authentication_user_command, 
         create_user_command,
         update_user_command,
-        get_current_user_command
+        get_current_user_command,
+        get_review_log_command
     },
     discipline_command::{
         create_discipline_command, 
@@ -19,6 +20,7 @@ use command::{
         create_content_command,
         update_content_command,
         get_all_content_command,
+        get_all_content_user_command,
         get_content_command,
         delete_content_command
     },
@@ -26,7 +28,15 @@ use command::{
         create_study_item_command,
         get_all_study_item_command,
         get_study_item_command,
-        delete_study_item_command
+        delete_study_item_command,
+        get_review_data_commmand
+    },
+    review_command::{
+        create_session_review_command,
+        update_session_review_command,
+        get_all_session_review_command,
+        get_one_session_review_command,
+        save_item_review_command
     }
 };
 
@@ -68,24 +78,37 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
             greet,
+            // user
             create_user_command,
             authentication_user_command,
             update_user_command,
             get_current_user_command,
+            get_review_log_command,
+            // discipline
             create_discipline_command,
             delete_discipline_command,
             get_all_discipline_command,
             get_discipline_command,
             update_discipline_command,
+            // content
             create_content_command,
             update_content_command,
             get_all_content_command,
+            get_all_content_user_command,
             get_content_command,
             delete_content_command,
+            // study_item
             create_study_item_command,
             get_all_study_item_command,
             get_study_item_command,
-            delete_study_item_command
+            delete_study_item_command,
+            // review
+            get_review_data_commmand,
+            create_session_review_command,
+            update_session_review_command,
+            get_all_session_review_command,
+            get_one_session_review_command,
+            save_item_review_command
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

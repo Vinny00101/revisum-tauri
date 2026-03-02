@@ -9,3 +9,5 @@ pub mod question_repository;
 pub mod objective_answer_repository;
 pub mod discursive_response_repository;
 pub mod user_status_repository;
+pub mod session_repository;
+pub mod reviewlog_repository;

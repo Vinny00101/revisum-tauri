@@ -17,6 +17,8 @@ impl<'a> QuestionRepository<'a> {
     pub fn new(state: State<'a, DbStore>) -> Self {
         Self { state }
     }
+    #[allow(dead_code)]
+
     // update_question
     pub async fn update_question(
         &self,
@@ -53,7 +55,8 @@ impl<'a> QuestionRepository<'a> {
         self.execute(&query, values).await
     }
 
-    // get_by_id
+    #[allow(dead_code)]
+
     pub async fn get_by_id(
         &self,
         id: i64,
@@ -76,6 +79,8 @@ impl<'a> QuestionRepository<'a> {
         )
         .await
     }
+
+    #[allow(dead_code)]
 
     // delete_question
     pub async fn delete_question(

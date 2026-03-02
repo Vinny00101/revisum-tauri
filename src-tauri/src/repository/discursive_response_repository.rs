@@ -29,6 +29,7 @@ impl<'a> DiscursiveResponseRepository<'a> {
         )
         .await
     }
+    #[allow(dead_code)]
 
     // delete_by_question
     pub async fn delete_by_question(

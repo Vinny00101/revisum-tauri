@@ -3,8 +3,8 @@ export interface User {
     username: string;
     email: string;
     avatar_path: string | null;
-    createdAt: string;
-    updatedAt: string;
+    created_at: string;
+    updated_at: string;
     status: Status | null;
 }
 

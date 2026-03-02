@@ -36,6 +36,54 @@ impl<'a> UserStatusRepository<'a> {
         ).await
     }
 
+    pub async fn update_streak_logic_tx(
+        &self, 
+        tx: &mut Transaction<'_, Sqlite>,
+        user_id: i64,
+    ) -> Result<(), AppError> {
+        let status: Option<UserStatus> = self.find_one_tx(
+            tx,
+            "SELECT * FROM user_status WHERE user_id = ?",
+            vec![JsonValue::from(user_id)]
+        ).await?;
+
+        let now: chrono::NaiveDate = chrono::Local::now().date_naive();
+        let today_str = now.to_string();
+
+        if let Some(s) = status {
+            if s.last_review_date.as_deref() == Some(&today_str) {
+                return Ok(());
+            }
+
+            let yesterday = now.pred_opt().unwrap_or(now);
+            let was_yesterday = s.last_review_date.as_deref() == Some(&yesterday.to_string());
+
+            if was_yesterday || s.current_streak == 0 {
+                // Incrementa
+                self.execute_tx(
+                    tx,
+                    "UPDATE user_status SET 
+                        current_streak = current_streak + 1,
+                        longest_streak = MAX(longest_streak, current_streak + 1),
+                        last_review_date = ?
+                     WHERE user_id = ?",
+                    vec![JsonValue::String(today_str), JsonValue::from(user_id)]
+                ).await?;
+            } else {
+                // Perdeu o streak (estudou há mais de 2 dias), reseta para 1
+                self.execute_tx(
+                    tx,
+                    "UPDATE user_status SET 
+                        current_streak = 1,
+                        last_review_date = ?
+                     WHERE user_id = ?",
+                    vec![JsonValue::String(today_str), JsonValue::from(user_id)]
+                ).await?;
+            }
+        }
+        Ok(())
+    }
+
     /// Busca os status de um usuário pelo ID
     pub async fn get_by_user_id(&self, user_id: i64) -> Result<Option<UserStatus>, AppError> {
         self.find_one(
@@ -43,7 +91,7 @@ impl<'a> UserStatusRepository<'a> {
             vec![JsonValue::from(user_id)]
         ).await
     }
-
+    /*
     /// Atualiza o tempo de estudo somando os novos minutos/segundos
     pub async fn add_study_time(&self, user_id: i64, time_to_add: i64) -> Result<ExecuteResult, AppError> {
         self.execute(
@@ -65,6 +113,7 @@ impl<'a> UserStatusRepository<'a> {
             vec![JsonValue::String(now), JsonValue::from(user_id)]
         ).await
     }
+    */
 }
 
 // Implementações dos Traits do Base Repository

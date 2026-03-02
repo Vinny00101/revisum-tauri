@@ -1,2 +1,2 @@
 export * from "./pages/Review"
-export * from "./pages/ReviewSession"
+export * from "./pages/ReviewSessionPage"

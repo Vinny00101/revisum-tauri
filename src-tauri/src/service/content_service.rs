@@ -1,6 +1,6 @@
 use crate::{
     error::app_error::AppError,
-    model::content::UpdateContent,
+    model::{content::UpdateContent},
     repository::{
         content_repository::ContentRepository, discipline_repository::DisciplineRepository,
     },
@@ -212,6 +212,24 @@ impl<'a> ContentService<'a> {
         })
     }
 
+    pub async fn get_all_content_user(
+        &self,
+        user_id: i64,
+    ) -> Result<ContentDataAll, AppError> {
+        let result = self
+            .content_repository
+            .get_all_content_user(user_id)
+            .await?;
+
+        let contents: Vec<ContentResponse> = result.iter().map(|c| c.into()).collect();
+
+        Ok(ContentDataAll { 
+            message: Message { 
+                code: true, message: "Buscas efetuadas com sucesso".into(), 
+            },
+            content: Some(contents)
+        })
+    }
     pub async fn get_content(
         &self,
         user_id: i64,

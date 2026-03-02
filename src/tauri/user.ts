@@ -43,3 +43,10 @@ export async function updateUser(
       update: updateData,
     });
 }
+
+export async function get_review_log(): Promise<any> {
+    const authData = await AuthStoreManager.get();
+    return await invoke<any>("get_review_log_command", {
+        user_id: authData?.user.id,
+    });
+}

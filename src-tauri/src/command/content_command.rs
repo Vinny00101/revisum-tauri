@@ -56,6 +56,16 @@ pub async fn get_content_command(
 }
 
 #[command(rename_all = "snake_case")]
+pub async fn get_all_content_user_command(
+    state: State<'_, DbStore>,
+    user_id: i64,
+) -> Result<ContentDataAll, String> {
+    let service = ServiceFactory::content(state);
+
+    service.get_all_content_user(user_id).await.map_err(|e| e.to_frontend())
+}
+
+#[command(rename_all = "snake_case")]
 pub async fn delete_content_command(
     state: State<'_, DbStore>,
     user_id: i64,

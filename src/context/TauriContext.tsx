@@ -33,7 +33,9 @@ export function TauriProvider({ children }: { children: ReactNode }) {
           const user = await getCurrentUser();
 
           if(!user.code || !user.user){
-            return;
+            setLoading(false);
+            await AuthStoreManager.remove();
+            setUser(null);
           }else{
             setUser(user.user);
           }

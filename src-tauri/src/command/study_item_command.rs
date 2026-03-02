@@ -4,7 +4,7 @@ use crate::{
     db::config::DbStore, filesystem::AppPaths, service::{
         dto::message_response::Message,
         service_factory::ServiceFactory,
-        study_item_service::{CreateStudyItemInput, StudyItemDataAll, StudyItemDataOne},
+        study_item_service::{CreateStudyItemInput, ReviewData, StudyItemDataAll, StudyItemDataOne},
     }
 };
 
@@ -65,4 +65,15 @@ pub async fn delete_study_item_command(
         .delete_study_item_by_content(state, study_item_id, user_id, content_id)
         .await
         .map_err(|e| e.to_frontend())
+}
+
+#[command(rename_all = "snake_case")]
+pub async fn get_review_data_commmand(
+    state: State<'_, DbStore>,
+    user_id: i64,
+    content_id: i64,
+) -> Result<ReviewData, String>{
+    let service = ServiceFactory::study_item(state.clone());
+
+    service.get_review_data(user_id, content_id).await.map_err(|e|e.to_frontend())
 }
