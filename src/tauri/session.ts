@@ -56,3 +56,14 @@ export async function save_item_review(
         time_spent: time_spent
     }});
 }
+
+
+export async function cancel_session(
+    session_id: number,
+) {
+    const authData = await AuthStoreManager.get();
+    return await invoke<message>("cancel_session_review_command", {
+        session_id: session_id,
+        user_id: authData?.user.id, 
+    });
+}

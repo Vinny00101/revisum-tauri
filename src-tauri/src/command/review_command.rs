@@ -56,3 +56,14 @@ pub async fn save_item_review_command(
     
     service.save_item_review(state, input).await.map_err(|e| e.to_frontend())
 }
+
+#[command(rename_all = "snake_case")]
+pub async fn cancel_session_review_command(
+    state: State<'_, DbStore>,
+    session_id: i64,
+    user_id: i64,
+) -> Result<Message, String>{
+    let service = ServiceFactory::review(state);
+
+    service.cancel_session_review(session_id, user_id).await.map_err(|e| e.to_frontend())
+}

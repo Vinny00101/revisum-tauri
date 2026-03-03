@@ -242,6 +242,17 @@ impl<'a> SessionRepository<'a> {
             evaluation: input.evaluation,
         })
     }
+
+    pub async fn delete(
+        &self,
+        id: i64,
+    ) -> Result<ExecuteResult, AppError> {
+        self.execute(
+            "DELETE FROM review_session WHERE id = ?",
+            vec![JsonValue::from(id)]
+        ).await
+    }
+
 }
 
 // Implementações das Traits para manter o padrão do seu BaseRepository
