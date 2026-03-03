@@ -11,3 +11,11 @@ export const formatDate = (dateString: string) => {
         return dateString;
     }
 };
+
+export const formatStudyTime = (seconds: number = 0) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m`;
+};

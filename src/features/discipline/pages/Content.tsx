@@ -247,6 +247,7 @@ export function Context() {
                         </div>
                     ) : (
                         <DataTable
+                            labelFooter="Itens de Estudo"
                             data={processedData}
                             columns={studyItemColumns}
                             pageSize={5}

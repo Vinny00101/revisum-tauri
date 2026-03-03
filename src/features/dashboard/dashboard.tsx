@@ -1,11 +1,12 @@
 import { useTauri } from "@/context/TauriContext";
 import { useToast } from "@/context/ToastContext";
 import { get_review_log, getCurrentUser } from "@/tauri/user";
-import { formatDate } from "@/util/FormatData";
+import { formatDate, formatStudyTime } from "@/util/FormatData";
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { Calendar, Mail } from "lucide-react";
+import { Award, Calendar, Clock, Flame, History, Mail } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import LogsDashboard from "./components/logs";
 
 export function Dashboard() {
     const { user, setUser } = useTauri();
@@ -15,43 +16,104 @@ export function Dashboard() {
 
     const fetchUserData = useCallback(async () => {
         try {
-          const result = await getCurrentUser();
-    
-          if (!result.code || !result.user) {
-            Navigate("/");
-          } else {
-            setUser(result.user);
-          }
-    
-          const result_log = await get_review_log();
-    
-          if (!result_log.code || !result_log.reviewlog) {
-            showToast({ type: "error", message: "Erro ao carregar logs do perfil" + result_log.message })
-          } else {
-            setReviewLog(result_log.reviewlog);
-            console.log(result_log.reviewlog);
-          }
+            const result = await getCurrentUser();
+
+            if (!result.code || !result.user) {
+                Navigate("/");
+            } else {
+                setUser(result.user);
+            }
+
+            const result_log = await get_review_log();
+
+            if (!result_log.code || !result_log.reviewlog) {
+                showToast({ type: "error", message: "Erro ao carregar logs do perfil" + result_log.message })
+            } else {
+                setReviewLog(result_log.reviewlog);
+                console.log(result_log.reviewlog);
+            }
         } catch (err: any) {
-          showToast({ type: "error", message: "Erro ao carregar dados do perfil" + err });
+            showToast({ type: "error", message: "Erro ao carregar dados do perfil" + err });
         }
-      }, [showToast]);
-    
-      useEffect(() => {
+    }, [showToast]);
+
+    useEffect(() => {
         fetchUserData();
-      }, [fetchUserData])
+    }, [fetchUserData])
 
 
     return (
-        <div className="min-h-screen bg-gray-50 p-6">
+        <div className="min-h-screen bg-gray-50">
             <div className="mx-auto">
+
+                {/* Header com saudação */}
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-4">
+                        <div>
+                            <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight leading-none">
+                                Olá, {user?.username || 'Estudante'}
+                            </h1>
+                            <p className="text-gray-500 mt-1.5 font-medium">
+                                Pronto para bater sua meta de hoje?
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 bg-white px-5 py-3 rounded-2xl shadow-sm border border-gray-200">
+                        <div className="flex items-center gap-2">
+                            <Calendar size={18} className="text-blue-500" />
+                            <span className="text-sm font-medium text-gray-700">
+                                {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                            </span>
+                        </div>
+                    </div>
+                </div>
 
                 {/* Container Principal com Flexbox */}
                 <div className="flex flex-col lg:flex-row gap-6">
 
 
                     <div className="w-full lg:w-[70%] space-y-6">
-                        <div className="bg-white rounded-2xl border border-gray-100 p-6 min-h-100">
-                            <h2 className="text-gray-400 font-medium">Conteúdo Principal (70%)</h2>
+                        {/* Stats Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+                            <div className=" bg-white rounded-2xl flex flex-col justify-between shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="w-12 h-12 rounded-xl bg-linear-to-br from-orange-50 to-orange-100 flex items-center justify-center border border-orange-200">
+                                        <Flame size={24} className="text-orange-600" />
+                                    </div>
+                                </div>
+                                <p className="text-sm text-gray-600 mt-1">Ofensiva Atual</p>
+                                <h3 className="text-2xl font-bold text-gray-900">{user?.status?.current_streak ?? 0} dias</h3>
+                                <p className="text-xs text-gray-500 mt-2">
+                                    Mantenha a sequência de estudos! 🔥
+                                </p>
+                            </div>
+
+                            <div className=" bg-white rounded-2xl flex flex-col justify-between shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="w-12 h-12 rounded-xl bg-linear-to-br from-green-50 to-green-100 flex items-center justify-center border border-green-200">
+                                        <Award size={24} className="text-green-600" />
+                                    </div>
+                                </div>
+                                <p className="text-sm text-gray-600 mt-1">Melhor Ofensiva</p>
+                                <h3 className="text-2xl font-bold text-gray-900">{user?.status?.longest_streak ?? 0} dias</h3>
+                                <p className="text-xs text-gray-500 mt-2">
+                                    Melhore sua sequência de estudos! 🔥
+                                </p>
+                            </div>
+
+                            <div className="bg-white rounded-2xl flex flex-col justify-between shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="w-12 h-12 rounded-xl bg-linear-to-br from-green-50 to-indigo-100 flex items-center justify-center border border-indigo-200">
+                                        <Clock size={24} className="text-indigo-900" />
+                                    </div>
+                                </div>
+                                <p className="text-sm text-gray-600 mt-1">Tempo Total</p>
+                                <h3 className="text-2xl font-bold text-gray-900">{formatStudyTime(user?.status?.total_study_time) ?? 0} </h3>
+                                <p className="text-xs text-gray-500 mt-2">
+                                    Aumente sua produtividade! 🔥
+                                </p>
+                            </div>
                         </div>
                     </div>
 
@@ -64,7 +126,7 @@ export function Dashboard() {
                                 </div>
                             </div>
 
-                            
+
                             <div className="border-t border-t-gray-300 mt-4">
                                 <div className="flex-1 justify-center text-center md:text-left">
                                     <h1 className="text-2xl text-center font-bold text-gray-900">{user?.username}</h1>
@@ -80,8 +142,21 @@ export function Dashboard() {
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-2xl border border-gray-100 p-6 min-h-75">
-                            <h2 className="text-gray-400 font-medium">Mini Widget / Stats</h2>
+
+
+                        <div className="bg-white rounded-2xl border shadow-sm border-gray-100 min-h-75">
+                            <div className="bg-gray-900 rounded-tl-2xl rounded-tr-2xl flex items-center justify-between mb-6 p-6">
+                                <div className="flex items-center gap-2">
+                                    <div className="p-2 bg-blue-600 rounded-lg">
+                                        <History size={16} className="text-white" />
+                                    </div>
+                                    <h3 className="text-xs font-bold text-white">Atividade Recente</h3>
+                                </div>
+                                <span className="text-[9px] uppercase tracking-wider font-bold text-gray-900 bg-gray-50 px-2 py-1 rounded-md border border-gray-100">
+                                    Últimas 5 revisões
+                                </span>
+                            </div>
+                            <LogsDashboard logs={reviewLog} />
                         </div>
                     </div>
                 </div>

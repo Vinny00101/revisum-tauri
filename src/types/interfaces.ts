@@ -18,3 +18,14 @@ export interface message {
   code: boolean,
   message: string
 }
+
+export interface ReviewLog {
+  id: number;
+  session_id: number;
+  user_id: number;
+  study_item_id: number;
+  item_type: string;
+  evaluation: string;
+  time_spent: number | null;
+  review_time: string;
+}

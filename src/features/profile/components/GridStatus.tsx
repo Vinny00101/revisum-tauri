@@ -1,15 +1,7 @@
+import { formatStudyTime } from "@/util/FormatData";
 import { Flame, Award, Timer, Clock } from "lucide-react";
 
 export function UserStatsGrid({ status }: { status: any }) {
-    // Função para formatar segundos em algo legível
-    const formatStudyTime = (seconds: number = 0) => {
-        const h = Math.floor(seconds / 3600);
-        const m = Math.floor((seconds % 3600) / 60);
-
-        if (h > 0) return `${h}h ${m}m`;
-        return `${m}m`;
-    };
-
     // Função para formatar a data (de 2026-03-02 para 02/03)
     const formatDate = (dateStr: string = "") => {
         if (!dateStr) return "---";

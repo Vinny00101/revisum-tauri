@@ -23,7 +23,7 @@ export function TableHeader<T>({
                         key={String(col.key)}
                         className={`px-6 py-4 text-left text-sm font-semibold text-gray-700
                         ${col.key != "actions" ? "cursor-pointer hover:bg-gray-100" : ""}`}
-                        onClick={() => col.sortable && onSort(col.key)}
+                        onClick={() => col.sortable && onSort( col.key as keyof T)}
                     >
                         <div className="flex items-center gap-1">
                             {col.header}

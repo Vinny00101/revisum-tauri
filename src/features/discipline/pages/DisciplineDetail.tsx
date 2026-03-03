@@ -289,6 +289,7 @@ export function DisciplineDetail() {
                     {/* Lista de Itens */}
                     <div className="overflow-x-auto">
                         <DataTable
+                            labelFooter="Conteúdos"
                             data={processedData}
                             columns={contentColumns}
                             pageSize={7}
