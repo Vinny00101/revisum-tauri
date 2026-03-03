@@ -18,6 +18,7 @@ pub struct UpdateQuestion {
 }
 
 impl UpdateQuestion {
+    #[allow(dead_code)]
     pub fn new(
         statement_text: Option<String>,
         statement_image: Option<String>,
