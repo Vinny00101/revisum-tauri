@@ -1,16 +1,22 @@
 interface Props {
+  label: string;
   classname?: string;
   currentPage: number;
   totalPages: number;
+  pageSize: number;
+  dataLength: number;
   goToNext: () => void;
   goToPrevious: () => void;
   goToPage: (p: number) => void;
 }
 
 export function TableFooter({
+  label,
   classname,
   currentPage,
   totalPages,
+  pageSize,
+  dataLength,
   goToNext,
   goToPrevious,
   goToPage,
@@ -20,14 +26,14 @@ export function TableFooter({
       <div className="flex items-center justify-between">
 
         <div className="text-sm text-gray-600">
-          Em breve...
-          {
-            /* 
-            Mostrando {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
-          {Math.min(currentPage * ITEMS_PER_PAGE, filteredDisciplines.length)}
-          {" "}de {disciplines.length} disciplinas
-          {search && ` • Filtrado por: "${search}"`}
-            */}
+          {dataLength > 0 ? (
+            <p>
+              Mostrando {(currentPage - 1) * pageSize + 1} a {Math.min(currentPage * pageSize, dataLength)}
+              {" "}de {dataLength} {label}
+            </p>
+          ) : (
+            <span>Nenhum registro encontrado</span>
+          )}
         </div>
 
         <div className="flex items-center gap-4">

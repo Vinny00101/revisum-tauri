@@ -8,7 +8,7 @@ export function SessionSummary({
     correct_items,
     time,
     onExit
-}: {sessionId: number, total: number, correct_items: number, time: string, onExit: () => void }) {
+}: {sessionId: number, total: number, correct_items: number, time: string, onExit: (isfinished?: boolean) => void }) {
     const hasSaved = useRef(false);
 
     useEffect(() => {
@@ -71,7 +71,7 @@ export function SessionSummary({
             </div>
 
             <button
-                onClick={onExit}
+                onClick={() => onExit(true)}
                 className="w-full py-4 bg-linear-to-r from-blue-600 to-purple-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-200 hover:scale-[1.02] transition-transform"
             >
                 VOLTAR AO INÍCIO

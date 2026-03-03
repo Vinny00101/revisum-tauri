@@ -1,4 +1,4 @@
-import { Brain, Clock, ChevronLeft } from "lucide-react";
+import { Brain, Clock, X } from "lucide-react";
 import { useReviewSession } from "@/hooks/useSession";
 import { Content, Discipline, StudyItemFullResponse } from "@/features/discipline";
 import { StudyItemType } from "@/types/types";
@@ -37,6 +37,7 @@ export function ReviewSession({ content, discipline, items, sessionType, session
     return <div>Nenhum item encontrado para este modo de revisão.</div>;
   }
 
+
   // Se a sessão acabou, mostra o resumo
   if (isFinished) {
     return (
@@ -60,9 +61,15 @@ export function ReviewSession({ content, discipline, items, sessionType, session
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button onClick={onExit} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                <ChevronLeft size={20} className="text-gray-500" />
+              <button
+                onClick={onExit}
+                className="group flex items-center gap-2 p-2 px-3 hover:bg-red-50 text-gray-500 hover:text-red-600 rounded-lg transition-all duration-200 border border-transparent hover:border-red-100"
+              >
+                <X size={18} className="group-hover:scale-110 transition-transform" />
+                <span className="text-sm font-medium">Sair</span>
               </button>
+              <div className="h-8 w-px bg-gray-200 mx-1" />
+              
               <div className="w-12 h-12 rounded-xl bg-linear-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-200">
                 <Brain size={24} className="text-white" />
               </div>

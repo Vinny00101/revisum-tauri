@@ -7,12 +7,14 @@ import { TableFooter } from "./Tablefooter";
 import { TableEmpty } from "./TableEmpty";
 
 interface Props<T> {
+    labelFooter: string;
     data: T[];
     columns: Column<T>[];
     pageSize?: number;
 }
 
 export function DataTable<T>({
+    labelFooter,
     data,
     columns,
     pageSize = 5,
@@ -40,11 +42,14 @@ export function DataTable<T>({
                 </table>
 
                 <TableFooter
+                    label={labelFooter}
                     currentPage={currentPage}
                     totalPages={totalPages}
                     goToNext={goToNext}
                     goToPrevious={goToPrevious}
                     goToPage={goToPage}
+                    pageSize={pageSize}
+                    dataLength={data.length}
                 />
             </div>
         </div>

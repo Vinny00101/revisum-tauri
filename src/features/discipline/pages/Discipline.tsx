@@ -66,6 +66,7 @@ export function DisciplinePage() {
             </div>
 
             <DataTable
+                labelFooter="Disciplina"
                 data={processedData}
                 columns={disciplineColumns}
                 pageSize={5}

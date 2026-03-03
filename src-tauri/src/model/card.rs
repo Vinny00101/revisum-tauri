@@ -16,7 +16,9 @@ pub struct UpdateCard {
     pub back: Option<String>,
 }
 
+
 impl UpdateCard {
+    #[allow(dead_code)]
     pub fn new(front: Option<String>, back: Option<String>) -> Self {
         Self { front, back }
     }

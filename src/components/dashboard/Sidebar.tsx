@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { BarChart3, BookOpen, BookText, HelpCircle, Home, Settings, Tag } from "lucide-react";
+import { BookOpen, BookText, Home } from "lucide-react";
 import { convertFileSrc } from "@tauri-apps/api/core";
 
 interface SidebarProps {
@@ -22,10 +22,6 @@ export default function Sidebar({
     { id: "dashboard", label: "Dashboard", icon: Home, path: "/dashboard" },
     { id: "disciplines", label: "Disciplinas", icon: BookText, path: "/disciplines" },
     { id: "reviews", label: "Revisões", icon: BookOpen, path: "/reviews" },
-    { id: "questions", label: "Questões", icon: HelpCircle, path: "/questions" },
-    { id: "categories", label: "Categorias", icon: Tag, path: "/categories" },
-    { id: "analysis", label: "Análises", icon: BarChart3, path: "/analysis" },
-    { id: "config", label: "Configurações", icon: Settings, path: "/settings" },
   ];
 
   return (

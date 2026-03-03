@@ -20,8 +20,8 @@ pub struct DisciplineIdLookup {
 }
 
 #[derive(Debug, FromRow, Serialize, Deserialize)]
-pub struct CountLookup {
-    pub total: i64,
+pub struct ReviewLogLookup {
+    pub evaluation: String,
 }
 
 impl<'a> DisciplineRepository<'a> {
@@ -167,36 +167,34 @@ impl<'a> DisciplineRepository<'a> {
         if let Some(data) = discipline_row {
             let discipline_id = data.discipline_id; // Acesso direto, sem .get()
             
-            let total_positive_hits: i64 = {
-                let count_res: Option<CountLookup> = self.find_one_tx(
+            let last_log: Option<ReviewLogLookup> = self.find_one_tx(
                     tx,
-                    "SELECT COUNT(*) as total FROM reviewlog 
-                     WHERE study_item_id = ? 
-                     AND evaluation IN ('CORRECT', 'EASY', 'MEDIUM')",
+                    "SELECT evaluation FROM reviewlog 
+                     WHERE study_item_id = 3
+                     ORDER BY review_time DESC LIMIT 1 OFFSET 1",
                     vec![JsonValue::from(study_item_id)],
                 ).await?;
-                count_res.map(|v| v.total).unwrap_or(0)
-            };
+
+            let was_positive = last_log.map(|l| {
+                matches!(l.evaluation.as_str(), "CORRECT" | "EASY" | "MEDIUM")
+            }).unwrap_or(false);
 
             let is_positive_now = matches!(evaluation.as_str(), "CORRECT" | "EASY" | "MEDIUM");
 
-            // Lógica ajustada:
-            let increment = if is_positive_now && total_positive_hits >= 1 {    
-                1  // É o primeiro acerto de todos (acabou de ser inserido)
-            } else if !is_positive_now && total_positive_hits == 0 {
-                0  // Errou e continua sem nenhum acerto
-            } else if !is_positive_now && total_positive_hits > 0 {
-                -1 
-            } else {
-                0
+            let increment = match (was_positive, is_positive_now) {
+                (true, true) => 0,
+                (false, false) => 0,
+                (true, false) => -1,
+                (false, true) => 1,
             };
+
             // C. Update Itens Masterizados e Data
             self.execute_tx(
                 tx,
                 "UPDATE discipline_progress 
-             SET items_mastered = MAX(0, items_mastered + ?), 
-                 last_review_date = ?
-             WHERE user_id = ? AND discipline_id = ?",
+                    SET items_mastered = MIN(total_items, MAX(0, items_mastered + ?)), 
+                    last_review_date = ?
+                    WHERE user_id = ? AND discipline_id = ?",
                 vec![
                     JsonValue::from(increment),
                     JsonValue::String(now),
@@ -209,8 +207,8 @@ impl<'a> DisciplineRepository<'a> {
             self.execute_tx(
                 tx,
                 "UPDATE discipline_progress 
-             SET progress_percent = ROUND((CAST(items_mastered AS REAL) * 100.0) / MAX(total_items, 1), 2)
-             WHERE user_id = ? AND discipline_id = ?",
+                    SET progress_percent = ROUND((CAST(items_mastered AS REAL) * 100.0) / MAX(total_items, 1), 2)
+                    WHERE user_id = ? AND discipline_id = ?",
                 vec![
                     JsonValue::from(user_id), 
                     JsonValue::from(discipline_id)
@@ -247,7 +245,7 @@ impl<'a> EntityRepository<DisciplineIdLookup> for DisciplineRepository<'a> {
 }
 
 
-impl<'a> EntityRepository<CountLookup> for DisciplineRepository<'a> {
+impl<'a> EntityRepository<ReviewLogLookup> for DisciplineRepository<'a> {
     fn get_state(&self) -> &State<'_, DbStore> {
         &self.state
     }

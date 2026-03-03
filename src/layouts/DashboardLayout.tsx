@@ -37,7 +37,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         />
 
         <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
-          <main id="main-layout" className="flex-1 p-6 overflow-y-auto">
+          <main id="main-layout" className="flex-1 p-6 overflow-y-auto overflow-x-hidden">
             {children || <Outlet />}
           </main>
 

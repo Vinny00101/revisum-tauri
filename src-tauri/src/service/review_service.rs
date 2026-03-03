@@ -199,9 +199,13 @@ impl<'a> ReviewService<'a> {
         })
     }
 
-    pub async fn save_item_review(&self, state: State<'_, DbStore>, input: ReviewLogInput) -> Result<Message, AppError> {
+    pub async fn save_item_review(
+        &self,
+        state: State<'_, DbStore>,
+        input: ReviewLogInput,
+    ) -> Result<Message, AppError> {
         let mut tx = db_begin_tx(&state).await?;
-        
+
         if !self.user_repository.exists_by_id(input.user_id).await? {
             return Ok(Message {
                 code: false,
@@ -220,11 +224,19 @@ impl<'a> ReviewService<'a> {
             });
         }
 
-        
+        let result = self
+            .session_repository
+            .save_item_review_tx(&mut tx, input)
+            .await?;
 
-        let result = self.session_repository.save_item_review_tx(&mut tx, input).await?;
-
-        self.discipline_repository.discipline_progress_update_tx(&mut tx, result.user_id, result.study_item_id, result.evaluation).await?;
+        self.discipline_repository
+            .discipline_progress_update_tx(
+                &mut tx,
+                result.user_id,
+                result.study_item_id,
+                result.evaluation,
+            )
+            .await?;
 
         db_commit_tx(tx).await?;
 
@@ -232,6 +244,25 @@ impl<'a> ReviewService<'a> {
             code: true,
             message: "Item revisado com sucesso".into(),
         })
+    }
 
+    pub async fn cancel_session_review(
+        &self,
+        session_id: i64,
+        user_id: i64,
+    ) -> Result<Message, AppError> {
+        if !self.user_repository.exists_by_id(user_id).await? {
+            return Ok(Message {
+                code: false,
+                message: "Usuário não encontrado".into(),
+            });
+        }
+
+        self.session_repository.delete(session_id).await?;
+
+        Ok(Message {
+            code: true,
+            message: "Sessão cancelada com sucesso".into(),
+        })
     }
 }
