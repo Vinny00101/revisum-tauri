@@ -45,7 +45,9 @@ impl ServiceFactory {
             UserRepository::new(state.clone()),
             UserStatusRepository::new(state.clone()),
             DisciplineRepository::new(state.clone()),
-            ContentRepository::new(state),
+            QuestionRepository::new(state.clone()),
+            ObjectiveAnswerRepository::new(state.clone()),
+            ContentRepository::new(state)
         )
     }
 }

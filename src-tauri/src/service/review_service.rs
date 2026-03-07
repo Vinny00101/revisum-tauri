@@ -8,11 +8,7 @@ use crate::{
     error::app_error::AppError,
     model::session::{ReviewSession, UpdateReviewSession},
     repository::{
-        content_repository::ContentRepository,
-        discipline_repository::DisciplineRepository,
-        session_repository::{ReviewLogInput, SessionRepository},
-        user_repository::UserRepository,
-        user_status_repository::UserStatusRepository,
+        content_repository::ContentRepository, discipline_repository::DisciplineRepository, objective_answer_repository::ObjectiveAnswerRepository, question_repository::QuestionRepository, session_repository::{ReviewLogInput, SessionRepository}, user_repository::UserRepository, user_status_repository::UserStatusRepository
     },
     service::dto::message_response::Message,
 };
@@ -35,11 +31,23 @@ pub struct SessionDataAll {
     pub sessions: Option<Vec<ReviewSession>>,
 }
 
+#[derive(Debug, serde::Deserialize)]
+pub struct ReviewQuestionObjInput {
+    pub session_id: i64,
+    pub user_id: i64,
+    pub question_id: i64,
+    pub item_type: String,
+    pub option_id: i64,
+    pub time_spent: i64,
+}
+
 pub struct ReviewService<'a> {
     session_repository: SessionRepository<'a>,
     user_repository: UserRepository<'a>,
     user_status_repository: UserStatusRepository<'a>,
     discipline_repository: DisciplineRepository<'a>,
+    question_repository: QuestionRepository<'a>,
+    objective_answer_repository: ObjectiveAnswerRepository<'a>,
     content_repository: ContentRepository<'a>,
 }
 
@@ -49,6 +57,8 @@ impl<'a> ReviewService<'a> {
         user_repository: UserRepository<'a>,
         user_status_repository: UserStatusRepository<'a>,
         discipline_repository: DisciplineRepository<'a>,
+        question_repository: QuestionRepository<'a>,
+        objective_answer_repository: ObjectiveAnswerRepository<'a>,
         content_repository: ContentRepository<'a>,
     ) -> Self {
         Self {
@@ -56,6 +66,8 @@ impl<'a> ReviewService<'a> {
             user_repository,
             user_status_repository,
             discipline_repository,
+            question_repository,
+            objective_answer_repository,
             content_repository,
         }
     }
@@ -150,6 +162,13 @@ impl<'a> ReviewService<'a> {
             .update_streak_logic_tx(&mut tx, user_id)
             .await?;
 
+        let discipline_id =self.session_repository
+            .get_session(session_id).await?
+            .map(|s| s.discipline_id)
+            .unwrap();
+
+        self.discipline_repository.recalculate_discipline_progress_tx(&mut tx, user_id, discipline_id).await?;
+
         db_commit_tx(tx).await?;
 
         Ok(Message {
@@ -224,18 +243,9 @@ impl<'a> ReviewService<'a> {
             });
         }
 
-        let result = self
+        self
             .session_repository
             .save_item_review_tx(&mut tx, input)
-            .await?;
-
-        self.discipline_repository
-            .discipline_progress_update_tx(
-                &mut tx,
-                result.user_id,
-                result.study_item_id,
-                result.evaluation,
-            )
             .await?;
 
         db_commit_tx(tx).await?;
@@ -245,6 +255,47 @@ impl<'a> ReviewService<'a> {
             message: "Item revisado com sucesso".into(),
         })
     }
+
+    pub async fn save_item_review_question_obj(
+        &self,
+        state: State<'_, DbStore>,
+        input: ReviewQuestionObjInput,
+    ) -> Result<Message, AppError> {
+        let mut tx = db_begin_tx(&state).await?;
+
+        let question = self
+            .question_repository
+            .get_by_id(input.question_id).await?.ok_or(AppError::NotFound("Item de estudo não foi encontrado".into()))?;
+
+        let objective = self
+            .objective_answer_repository
+            .get_correct_answer(input.option_id, question.id).await?.unwrap();
+
+        let evolution_string = match objective.is_correct {
+            1 => "CORRECT",
+            _ => "WRONG"
+        };
+
+        let input_save = ReviewLogInput {
+            session_id: input.session_id,
+            user_id: input.user_id,
+            study_item_id: question.study_item_id,
+            item_type: input.item_type,
+            evaluation: evolution_string.into(),
+            time_spent: input.time_spent,
+        };
+
+        self.session_repository
+            .save_item_review_tx(&mut tx, input_save)
+            .await?;
+
+        db_commit_tx(tx).await?;
+
+        Ok(Message { 
+            code: true, message: "Item revisado com sucesso".into()
+        })
+    }
+
 
     pub async fn cancel_session_review(
         &self,

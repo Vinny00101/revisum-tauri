@@ -147,76 +147,73 @@ impl<'a> DisciplineRepository<'a> {
         .await
     }
 
-    pub async fn discipline_progress_update_tx(
+    pub async fn recalculate_discipline_progress_tx(
         &self,
         tx: &mut Transaction<'_, Sqlite>,
         user_id: i64,
-        study_item_id: i64,
-        evaluation: String,
-    ) -> Result<(), AppError> {
-        let now = chrono::Utc::now().to_rfc3339();
+        discipline_id: i64,
+    ) -> Result<ExecuteResult, AppError> {
+
+        let dis_id = JsonValue::from(discipline_id);
+        let u_id = JsonValue::from(user_id);
+        self.execute_tx(tx, 
+            "
+                UPDATE discipline_progress 
+                SET 
+                    total_items = (
+                        SELECT COUNT(s.id) 
+                        FROM studyitem s 
+                        JOIN content c ON s.content_id = c.id 
+                        WHERE c.discipline_id = ?
+                    ),
+                    items_mastered = (
+                        SELECT COUNT(*) FROM (
+                            SELECT rl.study_item_id
+                            FROM reviewlog rl
+                            JOIN studyitem s ON rl.study_item_id = s.id
+                            JOIN content c ON s.content_id = c.id
+                            WHERE c.discipline_id = ? AND rl.user_id = ?
+                            GROUP BY rl.study_item_id
+                            HAVING rl.review_time = MAX(rl.review_time) 
+                            AND rl.evaluation IN ('MEDIUM', 'EASY', 'CORRECT')
+                        )
+                    ),
+                    progress_percent = (
+                        SELECT 
+                            CASE 
+                                WHEN total > 0 THEN ROUND((CAST(mastered AS FLOAT) * 100.0) / total, 2)
+                                ELSE 0 
+                            END
+                        FROM (
+                            SELECT 
+                                (SELECT COUNT(s.id) FROM studyitem s JOIN content c ON s.content_id = c.id WHERE c.discipline_id = ?) as total,
+                                (SELECT COUNT(*) FROM (
+                                    SELECT rl.study_item_id
+                                    FROM reviewlog rl
+                                    JOIN studyitem s ON rl.study_item_id = s.id
+                                    JOIN content c ON s.content_id = c.id
+                                    WHERE c.discipline_id = ? AND rl.user_id = ?
+                                    GROUP BY rl.study_item_id
+                                    HAVING rl.review_time = MAX(rl.review_time) 
+                                    AND rl.evaluation IN ('MEDIUM', 'EASY', 'CORRECT')
+                                )) as mastered
+                        )
+                    )
+                WHERE discipline_id = ? AND user_id = ?;
+            "
+            , 
+            vec![
+                dis_id.clone(),
+                dis_id.clone(),
+                u_id.clone(),
+                dis_id.clone(),
+                dis_id.clone(),
+                u_id.clone(),
+                dis_id,
+                u_id,
+            ]
         
-        let discipline_row: Option<DisciplineIdLookup> = self.find_one_tx(
-            tx,
-            "SELECT c.discipline_id FROM studyitem s 
-            JOIN content c ON s.content_id = c.id 
-            WHERE s.id = ?",
-            vec![JsonValue::from(study_item_id)],
-        ).await?;
-
-        if let Some(data) = discipline_row {
-            let discipline_id = data.discipline_id; // Acesso direto, sem .get()
-            
-            let last_log: Option<ReviewLogLookup> = self.find_one_tx(
-                    tx,
-                    "SELECT evaluation FROM reviewlog 
-                     WHERE study_item_id = 3
-                     ORDER BY review_time DESC LIMIT 1 OFFSET 1",
-                    vec![JsonValue::from(study_item_id)],
-                ).await?;
-
-            let was_positive = last_log.map(|l| {
-                matches!(l.evaluation.as_str(), "CORRECT" | "EASY" | "MEDIUM")
-            }).unwrap_or(false);
-
-            let is_positive_now = matches!(evaluation.as_str(), "CORRECT" | "EASY" | "MEDIUM");
-
-            let increment = match (was_positive, is_positive_now) {
-                (true, true) => 0,
-                (false, false) => 0,
-                (true, false) => -1,
-                (false, true) => 1,
-            };
-
-            // C. Update Itens Masterizados e Data
-            self.execute_tx(
-                tx,
-                "UPDATE discipline_progress 
-                    SET items_mastered = MIN(total_items, MAX(0, items_mastered + ?)), 
-                    last_review_date = ?
-                    WHERE user_id = ? AND discipline_id = ?",
-                vec![
-                    JsonValue::from(increment),
-                    JsonValue::String(now),
-                    JsonValue::from(user_id),
-                    JsonValue::from(discipline_id),
-                ],
-            ).await?;
-
-            // D. Update Porcentagem
-            self.execute_tx(
-                tx,
-                "UPDATE discipline_progress 
-                    SET progress_percent = ROUND((CAST(items_mastered AS REAL) * 100.0) / MAX(total_items, 1), 2)
-                    WHERE user_id = ? AND discipline_id = ?",
-                vec![
-                    JsonValue::from(user_id), 
-                    JsonValue::from(discipline_id)
-                ],
-            ).await?;
-        }
-
-        Ok(())
+        ).await
     }
 }
 

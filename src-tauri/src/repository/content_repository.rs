@@ -48,7 +48,7 @@ impl<'a> ContentRepository<'a> {
         let mut values = Vec::new();
 
         if let Some(title) = update.title {
-            fields.push("name = ?");
+            fields.push("title = ?");
             values.push(JsonValue::String(title));
         }
 
@@ -82,12 +82,14 @@ impl<'a> ContentRepository<'a> {
         ).await
     }
 
-    pub async fn delete_content(
+    pub async fn delete_content_tx(
         &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Sqlite>,
         discipline_id: i64,
         content_id: i64
     ) -> Result<ExecuteResult, AppError> {
-        self.execute(
+        self.execute_tx(
+                tx,
             "DELETE FROM content WHERE id = ? AND discipline_id = ?",
             vec![JsonValue::from(content_id),JsonValue::from(discipline_id)],
         ).await

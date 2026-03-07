@@ -30,6 +30,23 @@ impl<'a> ObjectiveAnswerRepository<'a> {
         .await
     }
 
+    pub async fn get_correct_answer(
+        &self,
+        id: i64,
+        question_id: i64,
+    ) -> Result<Option<ObjectiveAnswer>, AppError> {
+        self.find_one(
+            "SELECT * FROM objective_answer WHERE question_id = ? AND id = ? AND is_correct = 1 LIMIT 1",
+            vec![
+                JsonValue::from(question_id),
+                JsonValue::from(id)
+            ],
+        )
+        .await
+    }
+
+
+
     #[allow(dead_code)]
 
     // delete_by_question

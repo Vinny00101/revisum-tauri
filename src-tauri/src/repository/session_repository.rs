@@ -18,12 +18,6 @@ pub struct ReviewLogInput {
     pub time_spent: i64,
 }
 
-pub struct SaveItem {
-    pub user_id: i64,
-    pub study_item_id: i64,
-    pub evaluation: String,
-}
-
 #[derive(Debug, sqlx::FromRow)]
 pub struct StudyItemState {
     pub ease_factor: f64,
@@ -155,7 +149,7 @@ impl<'a> SessionRepository<'a> {
     pub async fn save_item_review_tx(&self, 
         tx: &mut Transaction<'_, Sqlite>,
         input: ReviewLogInput
-    ) -> Result<SaveItem, AppError> {
+    ) -> Result<ExecuteResult, AppError> {
         // 1. Inserir o Log na tabela reviewlog
         self.execute_tx(
         tx,
@@ -234,13 +228,7 @@ impl<'a> SessionRepository<'a> {
             JsonValue::String(chrono::Utc::now().to_rfc3339()),
             JsonValue::String(next_review.to_rfc3339()),
         ],
-        ).await?;
-
-        Ok(SaveItem {
-            user_id: input.user_id,
-            study_item_id: input.study_item_id,
-            evaluation: input.evaluation,
-        })
+        ).await
     }
 
     pub async fn delete(

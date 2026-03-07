@@ -72,7 +72,7 @@ pub async fn delete_content_command(
     content_id: i64,
     discipline_id: i64,
 ) -> Result<Message, String>{
-    let service = ServiceFactory::content(state);
+    let service = ServiceFactory::content(state.clone());
 
-    service.delete_content(user_id, content_id, discipline_id).await.map_err(|e| e.to_frontend())
+    service.delete_content(state,user_id, content_id, discipline_id).await.map_err(|e| e.to_frontend())
 }
