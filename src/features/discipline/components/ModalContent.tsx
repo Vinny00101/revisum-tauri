@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { X, BookText, Save } from "lucide-react";
+import { X, BookText, Save, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/context/ToastContext";
 import { CreateContentModalProps, ContentFormData } from "../types/modal";
-import OrderInput from "@/components/ui/orderInput";
-import { create_content } from "@/tauri/content";
+import OrderInput from "@/components/orderInput";
+import { create_content, delete_content, get_content, update_content } from "@/tauri/content";
 
 
 export function ModalContent({
@@ -31,8 +31,8 @@ export function ModalContent({
 
         const loadContent = async () => {
             try {
-                /*
-                const result = await get_content(id);
+                
+                const result = await get_content(id, disciplineId);
         
                 if (result.message.code && result.content) {
                   setFormData({
@@ -44,7 +44,7 @@ export function ModalContent({
                 } else {
                   showToast({ type: "error", message: result.message.message });
                 }
-                  */
+    
             } catch (error) {
                 showToast({ type: "error", message: "Erro ao carregar conteúdo" });
             }
@@ -83,9 +83,10 @@ export function ModalContent({
 
         setIsSubmitting(true);
         try {
-            /*
+        
           const message = await update_content(
             id,
+            disciplineId,
             formData.title,
             formData.description,
             formData.display_order
@@ -98,7 +99,6 @@ export function ModalContent({
             reloadTable();
             onClose();
           }
-            */
         } finally {
             setIsSubmitting(false);
         }
@@ -109,8 +109,7 @@ export function ModalContent({
 
         setIsDeleting(true);
         try {
-            /*
-          const result = await delete_content(id);
+          const result = await delete_content(id, disciplineId);
           if (!result.code) {
             showToast({ type: "error", message: result.message });
           } else {
@@ -118,7 +117,6 @@ export function ModalContent({
             reloadTable();
             onClose();
           }
-            */
         } finally {
             setIsDeleting(false);
         }
@@ -239,18 +237,45 @@ export function ModalContent({
 
                         {title === "Excluir Conteúdo" && (
                             <>
-                                <div className="p-6">
-                                    <p className="mb-4">
-                                        Tem certeza que deseja excluir este conteúdo?
-                                    </p>
-                                    <div className="flex justify-end gap-2">
-                                        <button onClick={onClose}>Cancelar</button>
+                                <div>
+                                    <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-red-100 rounded-lg">
+                                                <Trash2 size={20} className="text-red-600" />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
+                                                <p className="text-sm text-gray-500">
+                                                    Tem certeza que deseja excluir este conteúdo? Esta ação não pode ser desfeita.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={onClose}
+                                            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                                        >
+                                            <X size={20} />
+                                        </button>
+                                    </div>
+
+                                    <div className="p-6 flex justify-end gap-2">
+                                        <button
+                                            onClick={onClose}
+                                            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                                            disabled={isDeleting}
+                                        >
+                                            Cancelar
+                                        </button>
                                         <button
                                             onClick={handleDelete}
+                                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                             disabled={isDeleting}
-                                            className="bg-red-600 text-white px-4 py-2 rounded-lg"
                                         >
-                                            Excluir
+                                            {isDeleting ? (
+                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                            ) : (
+                                                "Excluir"
+                                            )}
                                         </button>
                                     </div>
                                 </div>

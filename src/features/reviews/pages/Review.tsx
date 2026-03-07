@@ -1,36 +1,45 @@
-import { Brain, Calendar, Clock, TrendingUp, Target, Award, CheckCircle, BarChart3, Search } from "lucide-react";
-import { useState } from "react";
+import { Brain, Calendar, Clock, TrendingUp, Target, CheckCircle, Search, BookOpen } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { disciplineSearch } from "@/features/discipline";
 import { useSmartFilterSearch } from "@/components/tables/hooks/useBarTools";
 import { useDisciplines } from "@/hooks/useDisciplines";
 import { useContent } from "@/hooks/useContent";
 import { ReviewTable } from "../components/ReviewTable";
 import { contentColumnsReviews } from "../components/contentColumnsReviews";
-
-interface ReviewStats {
-  totalToReview: number;
-  reviewedToday: number;
-  streak: number;
-  accuracy: number;
-  nextReview: {
-    count: number;
-    time: string;
-  };
-}
+import { DisciplineProgress } from "../components/discipline_progress";
+import { getCurrentUser } from "@/tauri/user";
+import { useTauri } from "@/context/TauriContext";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/context/ToastContext";
+import { formatStudyTime } from "@/util/FormatData";
 
 export function Review() {
   const { disciplines } = useDisciplines();
   const { content, fetchContentByDiscipline, refreshAll } = useContent();
+  const { user, setUser } = useTauri();
   const { search, setSearch, processedData, isSearchActive } = useSmartFilterSearch(disciplines, [], "all", disciplineSearch);
   const [selectionSearch, setSelectionSearch] = useState(String);
+  const navigate = useNavigate();
+  const { showToast } = useToast();
 
-  const [stats, _setStats] = useState<ReviewStats>({
-    totalToReview: 24,
-    reviewedToday: 8,
-    streak: 7,
-    accuracy: 82,
-    nextReview: { count: 12, time: "2h" }
-  });
+
+  const fetchUserData = useCallback(async () => {
+    try {
+      const result = await getCurrentUser();
+
+      if (!result.code || !result.user) {
+        navigate("/");
+      } else {
+        setUser(result.user);
+      }
+    } catch (err: any) {
+      showToast({ type: "error", message: "Erro ao carregar dados do perfil" + err });
+    }
+  }, [showToast]);
+
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
 
   const handleSelectDiscipline = (discipline: any) => {
     setSearch(discipline.name);
@@ -65,42 +74,32 @@ export function Review() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+          <div className="bg-white rounded-2xl flex flex-col justify-between shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-12 h-12 rounded-xl bg-linear-to-br from-orange-50 to-orange-100 flex items-center justify-center border border-orange-200">
-                <Clock size={24} className="text-orange-600" />
+              <div className="w-12 h-12 rounded-xl bg-linear-to-br from-green-50 to-indigo-100 flex items-center justify-center border border-indigo-200">
+                <Clock size={24} className="text-indigo-900" />
               </div>
-              <span className="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-1 rounded-full">
-                Hoje
-              </span>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900">{stats.totalToReview}</h3>
-            <p className="text-sm text-gray-600 mt-1">Itens para revisar</p>
-            <div className="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-linear-to-r from-orange-500 to-orange-400 rounded-full"
-                style={{ width: `${(stats.reviewedToday / stats.totalToReview) * 100}%` }}
-              />
-            </div>
+            <h3 className="text-2xl font-bold text-gray-900">{formatStudyTime(user?.status?.total_study_time) ?? 0} </h3>
+            <p className="text-sm text-gray-600 mt-1">Tempo Total</p>
             <p className="text-xs text-gray-500 mt-2">
-              {stats.reviewedToday} concluídos hoje
+              Aumente sua produtividade! 🔥
             </p>
           </div>
-
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-3">
               <div className="w-12 h-12 rounded-xl bg-linear-to-br from-green-50 to-green-100 flex items-center justify-center border border-green-200">
                 <TrendingUp size={24} className="text-green-600" />
               </div>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900">{stats.streak} dias</h3>
+            <h3 className="text-2xl font-bold text-gray-900">{user?.status?.current_streak ?? 0} dias</h3>
             <p className="text-sm text-gray-600 mt-1">Sequência de estudos</p>
             <div className="mt-3 flex items-center gap-1">
               {[...Array(7)].map((_, i) => (
                 <div
                   key={i}
-                  className={`h-2 flex-1 rounded-full ${i < stats.streak % 7
+                  className={`h-2 flex-1 rounded-full ${i < (user?.status?.current_streak ?? 0) % 7
                     ? 'bg-linear-to-r from-green-500 to-green-400'
                     : 'bg-gray-200'
                     }`}
@@ -118,30 +117,16 @@ export function Review() {
                 <Target size={24} className="text-blue-600" />
               </div>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900">{stats.accuracy}%</h3>
+            <h3 className="text-2xl font-bold text-gray-900">{83}%</h3>
             <p className="text-sm text-gray-600 mt-1">Taxa de acerto</p>
             <div className="mt-3 flex items-center gap-2">
               <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-linear-to-r from-blue-500 to-blue-400 rounded-full"
-                  style={{ width: `${stats.accuracy}%` }}
+                  style={{ width: `${83}%` }}
                 />
               </div>
               <span className="text-xs font-medium text-blue-600">+5%</span>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-12 h-12 rounded-xl bg-linear-to-br from-purple-50 to-purple-100 flex items-center justify-center border border-purple-200">
-                <Award size={24} className="text-purple-600" />
-              </div>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900">{stats.nextReview.count}</h3>
-            <p className="text-sm text-gray-600 mt-1">Próxima revisão</p>
-            <div className="mt-3 flex items-center gap-2">
-              <Calendar size={16} className="text-gray-400" />
-              <span className="text-sm font-medium text-gray-700">Em {stats.nextReview.time}</span>
             </div>
           </div>
         </div>
@@ -154,17 +139,16 @@ export function Review() {
 
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <Clock size={20} className="text-orange-500" />
-                  Revisões Pendentes
-                  <span className="px-2 py-0.5 bg-orange-50 text-orange-700 text-xs font-medium rounded-full border border-orange-200">
-                    {content.length}
-                  </span>
+                  <div className="bg-blue-50 p-3 rounded-full">
+                    <BookOpen size={20} className="text-blue-500 " />
+                  </div>
+                  Revisões por conteúdos
                 </h2>
                 {/* Botão para resetar o filtro */}
                 <button onClick={() => {
                   refreshAll();
                   setSearch('');
-                } } className="text-xs text-blue-600 hover:underline">
+                }} className="text-xs text-blue-600 hover:underline">
                   Limpar filtros
                 </button>
               </div>
@@ -176,7 +160,7 @@ export function Review() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                   <input
                     type="text"
-                    placeholder="Pesquisar disciplinas para filtrar conteudos..."
+                    placeholder="Pesquisar disciplinas para filtrar conteúdos..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
@@ -235,45 +219,7 @@ export function Review() {
 
           {/* Sidebar com estatísticas e dicas */}
           <div className="space-y-6">
-            {/* Progresso por disciplina */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <BarChart3 size={18} className="text-blue-500" />
-                Progresso por disciplina
-              </h3>
-
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-600">Matemática</span>
-                    <span className="font-medium text-gray-900">75%</span>
-                  </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full w-3/4 bg-linear-to-r from-blue-500 to-blue-400 rounded-full" />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-600">Português</span>
-                    <span className="font-medium text-gray-900">45%</span>
-                  </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full w-2/5 bg-linear-to-r from-green-500 to-green-400 rounded-full" />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-600">História</span>
-                    <span className="font-medium text-gray-900">60%</span>
-                  </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full w-3/5 bg-linear-to-r from-purple-500 to-purple-400 rounded-full" />
-                  </div>
-                </div>
-              </div>
-            </div>
+            <DisciplineProgress disciplines={disciplines} />
 
             {/* Dica do dia */}
             <div className="bg-linear-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200 p-6">
@@ -290,33 +236,7 @@ export function Review() {
               </div>
             </div>
 
-            {/* Meta diária */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
-                  Meta diária
-                </h3>
-                <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-                  20 itens
-                </span>
-              </div>
 
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Progresso</span>
-                <span className="text-sm font-medium text-gray-900">{stats.reviewedToday}/20</span>
-              </div>
-              <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden mb-4">
-                <div
-                  className="h-full bg-linear-to-r from-blue-500 to-blue-400 rounded-full"
-                  style={{ width: `${(stats.reviewedToday / 20) * 100}%` }}
-                />
-              </div>
-
-              <button className="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2">
-                <Calendar size={16} />
-                Ajustar meta
-              </button>
-            </div>
           </div>
         </div>
       </div>

@@ -58,14 +58,6 @@ export function useSmartFilterSearch<T, K extends string>(
 
     const handleSetFilter = (filter: K) => {
         setActiveFilter(filter);
-        // Se há busca ativa, perguntar ao usuário ou automaticamente limpar
-        if (activeSearch.trim() !== "") {
-            // Opção 1: Limpar automaticamente
-            // setActiveSearch("");
-            
-            // Opção 2: Manter ambos, mas indicar visualmente
-            console.log("Atenção: Filtro aplicado sobre busca existente");
-        }
     };
 
     const handleSetSearch = (search: string) => {

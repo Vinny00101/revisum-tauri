@@ -47,7 +47,6 @@ export function ModalDisciplina({
         setIsSubmitting(true);
         try {
             const message = await create_discipline(formData.name, formData.description);
-            console.log("Resposta da criação de disciplina:", message);
             if (!message.code) {
                 showToast({ type: "error", message: message.message });
             } else {
@@ -57,7 +56,6 @@ export function ModalDisciplina({
                 onClose();
             }
         } catch (error) {
-            console.log("error");
             showToast({ type: "error", message: "Erro ao criar disciplina: " + error });
         } finally {
             setIsSubmitting(false);

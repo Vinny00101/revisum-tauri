@@ -5,6 +5,7 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { QuestionFullResponse } from "@/features/discipline";
 import { ReviewDifficulty } from "../types/ReviewDifficulty";
 import { useToast } from "@/context/ToastContext";
+import { save_item_review, save_item_review_question_obj } from "@/tauri/session";
 
 interface ReviewQuestionProps {
     sessionId: number;
@@ -13,7 +14,7 @@ interface ReviewQuestionProps {
     onPrevious: () => void;
     currentIndex: number;
     totalItems: number;
-    onFinish: (id: number) => void;
+    onFinish: (id: number, difficulty_easy?: boolean) => void;
     isLocked?: boolean;
 }
 
@@ -25,24 +26,31 @@ export function ReviewQuestion({ sessionId, data, onNext, onPrevious, currentInd
     const [discursiveInput, setDiscursiveInput] = useState("");
     const [showFeedback, setShowFeedback] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const {showToast} = useToast();
+    const { showToast } = useToast();
 
     const [isImageOpen, setIsImageOpen] = useState(false);
 
     const isObjective = question.question_type === QuestionType.OBJECTIVE;
     const imageSrc = question.statement_image ? convertFileSrc(question.statement_image) : null;
 
-    // Handler para questões OBJETIVAS (Certo/Errado)
-    const handleObjectiveSubmit = (optionId: number) => {
-        if (isLocked || showFeedback) return;
+    const handleObjectiveSubmit = async (optionId: number) => {
+        if (isLocked || showFeedback || isSubmitting) return;
 
-        setSelectedOptionId(optionId);
+        setIsSubmitting(true);  
         setShowFeedback(true);
+        try {
+            setSelectedOptionId(optionId);
 
-        //const option = objective_answers?.find(a => a.id === optionId);
-        //const evaluation = option?.is_correct ? "CORRECT" : "WRONG";
+            await save_item_review_question_obj(sessionId, question.id, "OBJECTIVE", optionId);
 
-        onFinish(question.id);
+            onFinish(question.id);
+
+        } catch (error) {
+            showToast({ type: "error", message: "Erro ao salvar: " + error });
+            setSelectedOptionId(null);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     // Handler para confirmar que escreveu a DISCURSIVA
@@ -52,19 +60,20 @@ export function ReviewQuestion({ sessionId, data, onNext, onPrevious, currentInd
         setShowFeedback(true);
     };
 
-    // Handler para avaliação da DISCURSIVA (SRS)
-    const handleDiscursiveEvaluation = (_evalType: ReviewDifficulty) => {
+    const handleDiscursiveEvaluation = async (difficulty: ReviewDifficulty) => {
+        if (isSubmitting || isLocked) return;
+
         setIsSubmitting(true);
         try {
-            
+            await save_item_review(sessionId, question.id, "DISCURSIVE", difficulty);
 
-            onFinish(question.id)
+            onFinish(question.id, difficulty === "EASY");
 
             setTimeout(() => {
                 onNext?.();
             }, 400);
         } catch (error) {
-            showToast({type: "error", message: "Falha ao salvar revisão no Rust: " + error});
+            showToast({ type: "error", message: "Erro ao salvar: " + error });
         } finally {
             setIsSubmitting(false);
         }
@@ -154,7 +163,7 @@ export function ReviewQuestion({ sessionId, data, onNext, onPrevious, currentInd
                                 return (
                                     <button
                                         key={opt.id}
-                                        disabled={showFeedback}
+                                        disabled={showFeedback || isSubmitting}
                                         onClick={() => handleObjectiveSubmit(opt.id)}
                                         className={`w-full p-4 rounded-2xl border-2 transition-all flex items-center gap-4 text-left ${buttonStyle}`}
                                     >
@@ -186,9 +195,15 @@ export function ReviewQuestion({ sessionId, data, onNext, onPrevious, currentInd
                                 </button>
                             ) : (
                                 <div className={`animate-in fade-in slide-in-from-top-2 ${showFeedback ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
-                                    <div className="rounded-xl bg-gray-900 p-4">
-                                        <h4 className="font-bold text-purple-600 mb-2">Resposta Correta:</h4>
-                                        <p className="text-white text-sm">{discursive_response?.evaluation_criteria}</p>
+                                    <div className="rounded-xl space-y-6 bg-gray-900 p-4">
+                                        <div>
+                                            <h4 className="font-bold text-purple-600 mb-2">Resposta Correta:</h4>
+                                            <p className="text-white text-sm">{discursive_response?.expected_answer}</p>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-purple-600 mb-2">Critérios de Avaliação:</h4>
+                                            <p className="text-white text-sm">{discursive_response?.evaluation_criteria}</p>
+                                        </div>
                                     </div>
 
                                     {!isLocked && (

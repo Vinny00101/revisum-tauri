@@ -21,3 +21,12 @@ export async function get_all_study_item(
     const authData = await AuthStoreManager.get();
     return await invoke<StudyItemAll>("get_all_study_item_command", {user_id: authData?.user.id ,content_id: content_id});
 }
+
+export async function delete_study_item(id: number, content_id: number ) {
+    const authData = await AuthStoreManager.get();
+    return await invoke<message>("delete_study_item_command", {
+        user_id: authData?.user.id ,
+        content_id: content_id,
+        study_item_id:id
+    });
+}

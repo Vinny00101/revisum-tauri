@@ -32,9 +32,7 @@ export function ReviewSessionPage() {
     const handleCleanup = () => {
       const { id: sID, active } = sessionRef.current;
 
-      console.log("entrou aqui: " + window.location.pathname + " " + routeBase);
       if (active && sID) {
-        console.log("cancelando sessão: " + sID);
         cancelSession(sID);
       }
     };
@@ -131,13 +129,14 @@ export function ReviewSessionPage() {
           items={studyItems}
           sessionType={sessiontype}
           sessionId={sessionId}
-          onExit={() => hadleCancel}
+          onExit={hadleCancel}
         />
       );
     }
+  }
 
-    if (status === "finished") {
-      setStatus("setup");
-    }
+  if (status === "finished"){
+    setStatus("setup");
+    setSessionId(null);
   }
 }

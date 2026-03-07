@@ -1,14 +1,14 @@
 import { Settings, Calendar, Mail } from "lucide-react";
-import ModalUser from "../components/modalProfile";
+import ModalUser from "./components/modalProfile";
 import { useCallback, useEffect, useState } from "react";
 import { useToast } from "@/context/ToastContext";
 import { get_review_log, getCurrentUser } from "@/tauri/user";
 import { useNavigate } from "react-router-dom";
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { useTauri } from "@/context/TauriContext";
-import { UserStatsGrid } from "../components/GridStatus";
-import RecentActivity from "../components/logs";
+import { UserStatsGrid } from "./components/GridStatus";
 import { formatDate } from "@/util/FormatData";
+import RecentActivity from "@/components/logs";
 
 export function Profile() {
   const navigate = useNavigate();
@@ -33,7 +33,6 @@ export function Profile() {
         showToast({ type: "error", message: "Erro ao carregar logs do perfil" + result_log.message })
       } else {
         setReviewLog(result_log.reviewlog);
-        console.log(result_log.reviewlog);
       }
     } catch (err: any) {
       showToast({ type: "error", message: "Erro ao carregar dados do perfil" + err });

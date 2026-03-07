@@ -138,7 +138,7 @@ export function ReviewCard({
       `}>
         <button
           disabled={isSubmitting || rated}
-          //onClick={() => handleRate("WRONG")}
+          onClick={() => handleRate("WRONG")}
           className="cursor-pointer flex flex-col items-center gap-2 p-3 bg-white hover:bg-red-50 border border-gray-100 rounded-2xl transition-all group">
           <div className="p-2 bg-red-50 group-hover:bg-red-500 transition-colors rounded-xl text-red-500 group-hover:text-white">
             <X size={20} />

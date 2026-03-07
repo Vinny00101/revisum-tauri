@@ -16,11 +16,8 @@ const ProtectedRoutes: React.FC = () => {
     }
   
     if (!isAuthenticated) {
-      console.log('Usuário não autenticado, redirecionando para login');
       return <Navigate to="/login" replace />;
     }
-
-    console.log('Usuário autenticado, permitindo acesso');
     return <Outlet />;
 
 }

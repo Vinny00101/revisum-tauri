@@ -6,15 +6,17 @@ import { DataTable } from "@/components/tables/DataTables";
 import { useSmartFilterSearch } from "@/components/tables/hooks/useBarTools";
 import { useToast } from "@/context/ToastContext";
 import { number } from "framer-motion";
-import { BarChart3, BookOpen, Calendar, FileText, Filter, Plus, Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { BookOpen, Calendar, FileText, Filter, Plus, Search } from "lucide-react";
+import { useEffect,useCallback, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { contentFilters, contentSearch } from "../components/content/contentTool";
 import { get_discipline } from "@/tauri/discipline";
 import { ModalDisciplina } from "../components/ModalDiscipline";
-import {ModalContent} from "../components/ModalContent";
+import { ModalContent } from "../components/ModalContent";
 import { get_all_content } from "../../../tauri/content";
 import { Content, Discipline } from "../types/interfaces";
+import { eventBus } from "@/util/Event";
+
 
 export function DisciplineDetail() {
     const navigate = useNavigate();
@@ -23,22 +25,33 @@ export function DisciplineDetail() {
     const [discipline, setDiscipline] = useState<Discipline>();
     const [contents, setContents] = useState<Content[]>([]);
     const [isCreateContentModalOpen, setIsCreateContentModalOpen] = useState(false);
-    const { filter, search, setFilter, setSearch, processedData } = useSmartFilterSearch(contents, contentFilters, "all", contentSearch);
     const [editId, setEditId] = useState<number | null>(null);
-    const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-
-    const getDiscipline = async () => {
+    const getContents = useCallback( async (id_number: number) => {
         try {
-            if (!id) {
+            const result = await get_all_content(id_number);
+            if (!result.message.code || !result.content) {
                 showToast({
                     type: "error",
-                    message: "O identificador único não existe no parâmetro da url.",
-                });
-                navigate("/disciplines");
-                return;
+                    message: result.message.message
+                })
+            } else {
+                const adapted = result.content;
+                setContents(adapted);
             }
-            const id_number = number.parse(id);
+        } catch (err: any) {
+            showToast({
+                type: "error",
+                message: "Erro no rust",
+            });
+        }
+    }, []);
+
+    const getDiscipline = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const id_number = Number(id);
             const discipline = await get_discipline(id_number);
 
             if (!discipline.discipline) {
@@ -59,32 +72,31 @@ export function DisciplineDetail() {
                 type: "error",
                 message: "O identificador único da disciplina deve ser um número:" + err,
             });
+        }finally{
+            setIsLoading(false);
         }
-    };
-
-    const getContents = async (id_number: number) => {
-        try {
-            const result = await get_all_content(id_number);
-            if (!result.message.code || !result.content) {
-                showToast({
-                    type: "error",
-                    message: result.message.message
-                })
-            } else {
-                const adapted = result.content;
-                setContents(adapted);
-            }
-        } catch (err: any) {
-            showToast({
-                type: "error",
-                message: "Erro no rust",
-            });
-        }
-    }
+    }, [id, getContents]);
 
     useEffect(() => {
         getDiscipline();
-    }, []);
+
+        eventBus.on("content:updated", getDiscipline);
+
+        return () => {
+            eventBus.off("content:updated", getDiscipline);
+        };
+    }, [getDiscipline]);
+
+    const { filter, search, setFilter, setSearch, processedData } = useSmartFilterSearch(contents, contentFilters, "all", contentSearch);
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center h-64 space-y-4">
+                <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-gray-500 animate-pulse">Carregando conteúdos...</p>
+            </div>
+        );
+    }
 
     if (!discipline) {
         return (
@@ -133,10 +145,9 @@ export function DisciplineDetail() {
                                     <div className="flex items-start justify-end gap-2">
                                         <ActionButtons
                                             disciplineId={discipline.id}
-                                            isFavorite={false}
+                                            isShowDropdown={false}
                                             onAction={(action, id) => {
                                                 if (action === "edit") setEditId(id);
-                                                if (action === "delete") setDeleteId(id);
                                             }}
                                         >
                                             <ModalDisciplina
@@ -144,14 +155,6 @@ export function DisciplineDetail() {
                                                 title="Editar Disciplina"
                                                 isOpen={editId === discipline.id}
                                                 onClose={() => setEditId(null)}
-                                                reloadTable={getDiscipline}
-                                            />
-
-                                            <ModalDisciplina
-                                                id={deleteId ?? undefined}
-                                                title="Excluir Disciplina"
-                                                isOpen={deleteId === discipline.id}
-                                                onClose={() => setDeleteId(null)}
                                                 reloadTable={getDiscipline}
                                             />
                                         </ActionButtons>
@@ -294,59 +297,6 @@ export function DisciplineDetail() {
                             columns={contentColumns}
                             pageSize={7}
                         />
-                    </div>
-                </div>
-
-                {/* Estatísticas Detalhadas */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                        <h3 className=" font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                            <BarChart3 size={20} />
-                            Estatísticas de Estudo
-                        </h3>
-                        <p className="text-sm mb-4 text-gray-500">Esta seção ainda tá em desenvolvimento.(Dados ilustrativo).</p>
-                        {/* Ainda vai ser feito a logica disso aqui mais tarde. */}
-                        <div className="space-y-4">
-                            <div>
-                                <p className="text-sm text-gray-500">Tempo total de estudo</p>
-                                <p className="text-lg font-semibold text-gray-800">4h 32m</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-500">Sessões realizadas</p>
-                                <p className="text-lg font-semibold text-gray-800">12</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-500">Taxa de acerto</p>
-                                <p className="text-lg font-semibold text-gray-800">78%</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                        <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                            <Calendar size={20} />
-                            Próximas Revisões
-                        </h3>
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                                <div>
-                                    <p className="font-medium text-gray-800">Cards atrasados</p>
-                                    <p className="text-sm text-gray-500">Devem ser revisados hoje</p>
-                                </div>
-                                <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
-                                    12
-                                </span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-                                <div>
-                                    <p className="font-medium text-gray-800">Próximas revisões</p>
-                                    <p className="text-sm text-gray-500">Nos próximos 7 dias</p>
-                                </div>
-                                <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
-                                    24
-                                </span>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
