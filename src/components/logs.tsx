@@ -3,20 +3,21 @@ import { CheckCircle2, AlertCircle, History } from "lucide-react";
 import { formatDate } from '@/util/FormatData';
 import { ReviewLog } from '@/types/interfaces';
 import { EvaluationBadge } from '@/components/EvaluationBadge';
+import { ItemType } from '@/components/ItemType';
 
 interface RecentActivityProps {
   logs: ReviewLog[];
+  limit?: number;
 }
 
-const RecentActivity: React.FC<RecentActivityProps> = ({ logs }) => {
-
-  // Sub-componente para os Badges de dificuldade
-  
+const RecentActivity: React.FC<RecentActivityProps> = ({ logs, limit = 10 }) => {
+  // Garantimos que o limite seja no mínimo 10
+  const displayLimit = Math.max(limit, 6);
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+    <div className={`flex flex-col h-full bg-white rounded-2xl space-y-3 shadow-sm border border-gray-100 p-6`}>
       {/* Cabeçalho */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-blue-50 rounded-lg">
             <History size={20} className="text-blue-600" />
@@ -24,20 +25,20 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ logs }) => {
           <h3 className="font-bold text-gray-800">Atividade Recente</h3>
         </div>
         <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-md border border-gray-100">
-          Últimas 10 revisões
+          Últimas {displayLimit} revisões
         </span>
       </div>
 
       {/* Lista de Logs */}
-      <div className="space-y-3">
+      <div className="flex-1 space-y-3">
         {logs && logs.length > 0 ? (
-          logs.slice(0, 10).map((log) => (
+          // Usamos o displayLimit aqui
+          logs.slice(0, displayLimit).map((log) => (
             <div 
               key={log.id} 
               className="group flex items-center justify-between p-3 rounded-xl border border-gray-50 hover:border-blue-100 hover:bg-blue-50/30 transition-all duration-200"
             >
               <div className="flex items-center gap-4">
-                {/* Ícone baseado no tipo de item */}
                 <div className="p-2 bg-gray-50 rounded-lg group-hover:bg-white transition-colors">
                   {log.item_type.toUpperCase() === "CARD" ? (
                     <CheckCircle2 size={18} className="text-indigo-500" />
@@ -48,17 +49,8 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ logs }) => {
                 
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold text-gray-700">
-                      {log.item_type}
-                    </p>
+                    <ItemType item_type={log.item_type}/>
                     <EvaluationBadge evaluation={log.evaluation} />
-                  </div>
-                  
-                  <div className="flex items-center gap-3 mt-1">
-                    {/*<span className="text-[11px] text-gray-400 flex items-center gap-1 font-medium">
-                      <Clock size={12} className="text-gray-300" />
-                      {log.time_spent ? `${log.time_spent}s gastos` : "Tempo não reg."}
-                    </span>*/}
                   </div>
                 </div>
               </div>
@@ -73,7 +65,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ logs }) => {
           ))
         ) : (
           /* Estado Vazio */
-          <div className="h-32 bg-gray-50/50 rounded-xl border border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 gap-2">
+          <div className={`h-full bg-gray-50/50 rounded-xl border border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 gap-2`}>
             <History size={24} className="opacity-20" />
             <span className="text-sm font-medium">Nenhuma atividade encontrada</span>
           </div>

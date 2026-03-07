@@ -26,7 +26,6 @@ export function TauriProvider({ children }: { children: ReactNode }) {
         const authData = await AuthStoreManager.get();
         
         if (!authData || !authData.user) {
-          console.log('Nenhum dado no store foi encontrado');
           setUser(null);
           setLoading(false);
         }else{
@@ -55,13 +54,11 @@ export function TauriProvider({ children }: { children: ReactNode }) {
   const login = (userData: User) => {
     setUser(userData);
     AuthStoreManager.set(userData, 10);
-    console.log('Usuário logado:', userData);
   };
   
   const logout = () => {
     setUser(null);
     AuthStoreManager.remove();
-    console.log('Usuário deslogado');
   };
 
   const isAuthenticated = !!user;

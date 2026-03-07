@@ -26,7 +26,7 @@ export default function Sidebar({
 
   return (
     <aside className={`bg-gray-900 text-white transition-all duration-300 ${collapsed ? 'w-20' : 'w-64'} h-screen flex flex-col`}>
-      <div className="px-6  border-b border-gray-800">
+      <div className="px-6">
         <div className="flex items-center justify-between">
           {!collapsed && (
             <div className="flex items-center py-1.75">

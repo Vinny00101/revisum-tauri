@@ -38,12 +38,15 @@ export function ReviewTable<T>({
           <TableBody 
           tbodyClassname="w-full"
           trClassname="w-full"
-          tdClassname="py-4"
+          tdClassname="pb-2"
           data={paginatedData} columns={columns} />
         </table>
 
 
         <TableFooter classname="p-0! border-none bg-white!"
+          label="Conteúdos"
+          dataLength={data.length}
+          pageSize={pageSize}
           currentPage={currentPage}
           totalPages={totalPages}
           goToNext={goToNext}

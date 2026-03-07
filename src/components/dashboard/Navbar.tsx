@@ -1,6 +1,5 @@
 import { useTauri } from "@/context/TauriContext";
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface NavbarProps {
@@ -12,11 +11,6 @@ interface NavbarProps {
 export default function Navbar({ onMenuClick, sidebarCollapsed, username = "Usuário" }: NavbarProps) {
   const {user} = useTauri();
   const navigate = useNavigate();
-  const [notifications] = useState([
-    { id: 1, title: "Nova questão adicionada", time: "2 min atrás" },
-    { id: 2, title: "Revisão pendente", time: "1 hora atrás" },
-    { id: 3, title: "Atualização do sistema", time: "3 horas atrás" },
-  ]);
 
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">
@@ -36,7 +30,7 @@ export default function Navbar({ onMenuClick, sidebarCollapsed, username = "Usu�
 
         {/* Lado Direito */}
         <div className="flex items-center space-x-4">
-          {/* Notificações */}
+          {/* Notificações
           <div className="relative group">
             <button className="p-2 rounded-lg hover:bg-gray-100 relative">
               <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,7 +39,6 @@ export default function Navbar({ onMenuClick, sidebarCollapsed, username = "Usu�
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
 
-            {/* Dropdown de Notificações */}
             <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
               <div className="p-4 border-b border-gray-200">
                 <h3 className="font-semibold text-gray-800">Notificações</h3>
@@ -64,14 +57,17 @@ export default function Navbar({ onMenuClick, sidebarCollapsed, username = "Usu�
                 </button>
               </div>
             </div>
+            
           </div>
+          */}
 
-          {/* Modo Escuro/Claro */}
+          {/* Modo Escuro/Claro
           <button className="p-2 rounded-lg hover:bg-gray-100">
             <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
             </svg>
           </button>
+          */}
 
           {/* Perfil */}
           <button

@@ -1,17 +1,18 @@
 import { DisciplineAction } from "@/types/types";
-import { Edit, Play, MoreVertical, Trash2, Download, Star } from "lucide-react";
+import { Edit, MoreVertical, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 interface ActionButtonsProps {
     disciplineId: number;
     isFavorite?: boolean;
+    isShowDropdown?: boolean; 
     onAction: (action: DisciplineAction, disciplineId: number) => void;
     children?: React.ReactNode;
 }
 
 export default function ActionButtons({
     disciplineId,
-    isFavorite = false,
+    isShowDropdown = true,
     onAction,
     children,
 }: ActionButtonsProps) {
@@ -19,7 +20,7 @@ export default function ActionButtons({
 
     return (
         <div className="flex items-center gap-2">
-            {/* Botão de Estudar */}
+            {/* Botão de Estudar 
             <button
                 onClick={
                     () => onAction("study", disciplineId)
@@ -29,6 +30,7 @@ export default function ActionButtons({
             >
                 <Play size={18} />
             </button>
+            */}
 
             {/* Botão de Editar */}
             <button
@@ -38,7 +40,8 @@ export default function ActionButtons({
             >
                 <Edit size={18} />
             </button>
-
+            
+            {/*
             <button
                 onClick={
                     () => onAction("toggle_favorite", disciplineId)}
@@ -49,10 +52,10 @@ export default function ActionButtons({
                 title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
             >
                 <Star size={18} className={isFavorite ? "fill-yellow-400" : ""} />
-            </button>
+            </button>*/}
 
             {/* Dropdown de Mais Opções */}
-            <div className="relative">
+            { isShowDropdown && (<div className="relative">
                 <button
                     onClick={() => setShowDropdown(!showDropdown)}
                     className="p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
@@ -70,7 +73,7 @@ export default function ActionButtons({
                         <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                             <div className="py-1">
 
-                                <button
+                                {/*<button
                                     onClick={() => {
                                         onAction("export", disciplineId);
                                     }}
@@ -79,7 +82,7 @@ export default function ActionButtons({
                                     <Download size={16} />
                                     Exportar dados
                                 </button>
-
+                                */}
 
                                 <button
                                     onClick={() => {
@@ -95,7 +98,7 @@ export default function ActionButtons({
                         </div>
                     </>
                 )}
-            </div>
+            </div>)}
 
             {children}
             

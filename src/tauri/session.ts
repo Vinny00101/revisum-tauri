@@ -57,6 +57,23 @@ export async function save_item_review(
     }});
 }
 
+export async function save_item_review_question_obj(
+    session_id: number,
+    question_id: number,
+    item_type: string,
+    option_id: number,
+    time_spent: number = 0,
+): Promise<message> {
+    const authData = await AuthStoreManager.get();
+    return await invoke<message>("save_item_review_question_obj_command", {input: {
+        session_id: session_id, 
+        user_id: authData?.user.id, 
+        question_id: question_id, 
+        item_type: item_type, 
+        time_spent: time_spent,
+        option_id: option_id
+    }});    
+}
 
 export async function cancel_session(
     session_id: number,

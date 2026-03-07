@@ -2,6 +2,8 @@ import { Column } from "@/types/interfaces";
 import { StudyItemType } from "@/types/types";
 import { FileText, HelpCircle } from "lucide-react";
 import { StudyItemFullResponse } from "../../types/interfaces";
+import ButtonDelete from "./delete";
+import { eventBus } from "@/util/Event";
 
 export const studyItemColumns: Column<StudyItemFullResponse>[] = [
     {
@@ -19,6 +21,10 @@ export const studyItemColumns: Column<StudyItemFullResponse>[] = [
                 </div>
                 <span className="font-medium">
                     {item.item_type === StudyItemType.CARD ? "Card" : "Questão"}
+                    {item.item_type === StudyItemType.QUESTION && <p className="font-normal text-xs">{item.item_type === StudyItemType.QUESTION 
+                    && item.question?.question.question_type === "OBJECTIVE" ? " (Objetiva)"
+                    :" (Discursiva)"
+                    }</p>}
                 </span>
             </div>
         ),
@@ -81,8 +87,14 @@ export const studyItemColumns: Column<StudyItemFullResponse>[] = [
     {
         key: "actions",
         header: "Ações",
-        render: () => {
-
-        }
+        render: (item) => (
+            <ButtonDelete
+                id={item.id}
+                contentid={item.content_id}
+                title={item.item_type === StudyItemType.CARD ? "Excluir Card" : "Excluir Questão"}
+                reloadTable={() => eventBus.emit("content_item:updated")}
+                onClose={() => false}
+            ></ButtonDelete>
+        )
     }
 ]

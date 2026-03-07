@@ -1,3 +1,4 @@
+import { useToast } from "@/context/ToastContext";
 import { update_session } from "@/tauri/session";
 import { CheckCircle } from "lucide-react";
 import { useEffect, useRef } from "react";
@@ -9,6 +10,7 @@ export function SessionSummary({
     time,
     onExit
 }: {sessionId: number, total: number, correct_items: number, time: string, onExit: (isfinished?: boolean) => void }) {
+    const {showToast} = useToast();
     const hasSaved = useRef(false);
 
     useEffect(() => {
@@ -32,13 +34,11 @@ export function SessionSummary({
                 );
 
                 if (!response.code) {
-                    console.error("Erro ao salvar fim da sessão:", response.message);
+                    showToast({ type: "error", message: response.message });
                     return;
                 }
-
-                console.log("Sessão finalizada e salva com sucesso.");
             } catch (error) {
-                console.error("Erro ao salvar fim da sessão:", error);
+                showToast({ type: "error", message: "Erro ao salvar fim da sessão: " + error });
             }
         };
 

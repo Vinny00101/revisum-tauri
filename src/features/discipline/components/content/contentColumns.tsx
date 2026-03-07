@@ -2,6 +2,7 @@ import { Content } from "../../types/interfaces";
 import { Column } from "@/types/interfaces";
 import { File } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import ModalRender from "./ModalRender";
 
 export const contentColumns: Column<Content>[] = [
     {
@@ -92,12 +93,12 @@ export const contentColumns: Column<Content>[] = [
     {
         key: "actions",
         header: "Ações",
-        render: () => (
-            <div className="flex justify-center">
-                <span className="text-sm text-gray-400 italic">
-                    Em breve...
-                </span>
-            </div>
+        sortable: false,
+        render: (c) => (
+            <ModalRender
+                id={c.id}
+                disciplineId={c.discipline_id}
+            />
         )
     }
 ];

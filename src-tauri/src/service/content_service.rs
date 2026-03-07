@@ -1,10 +1,9 @@
+use tauri::State;
+
 use crate::{
-    error::app_error::AppError,
-    model::{content::UpdateContent},
-    repository::{
+    db::{config::DbStore, db_methods::{db_begin_tx, db_commit_tx}}, error::app_error::AppError, model::content::UpdateContent, repository::{
         content_repository::ContentRepository, discipline_repository::DisciplineRepository,
-    },
-    service::dto::{content_response::ContentResponse, message_response::Message},
+    }, service::dto::{content_response::ContentResponse, message_response::Message}
 };
 
 #[derive(serde::Serialize)]
@@ -141,6 +140,7 @@ impl<'a> ContentService<'a> {
 
     pub async fn delete_content(
         &self,
+        state: State<'_, DbStore>,
         user_id: i64,
         content_id: i64,
         discipline_id: i64,
@@ -166,10 +166,16 @@ impl<'a> ContentService<'a> {
                 message: "Conteúdo não foi encontrada".into(),
             });
         }
+        let mut tx = db_begin_tx(&state).await?;
 
         self.content_repository
-            .delete_content(discipline_id, content_id)
+            .delete_content_tx(&mut tx, discipline_id, content_id)
             .await?;
+
+        self.discipline_repository.recalculate_discipline_progress_tx(&mut tx, user_id, discipline_id).await?;
+
+
+        db_commit_tx(tx).await?;
 
         Ok(Message {
             code: true,

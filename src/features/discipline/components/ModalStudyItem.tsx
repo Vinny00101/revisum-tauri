@@ -77,8 +77,6 @@ export function ModalStudyItem({
         try {
             let payload: CreateStudyItemInput;
 
-            console.log(contentId);
-
             if (itemType === StudyItemType.CARD) {
                 payload = {
                     content_id: contentId,

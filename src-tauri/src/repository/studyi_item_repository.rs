@@ -42,7 +42,7 @@ impl<'a> StudyItemRepository<'a> {
     ) -> Result<ExecuteResult, AppError> {
         self.execute_tx(
             tx,
-            "DELETE FROM studyitem WHERE id = ? AND content_id ?",
+            "DELETE FROM studyitem WHERE id = ? AND content_id = ?",
             vec![JsonValue::from(id), JsonValue::from(content_id)],
         )
         .await

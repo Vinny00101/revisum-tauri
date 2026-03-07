@@ -116,7 +116,7 @@ export default function OrderInput({
             type="button"
             onClick={increment}
             disabled={disabled || (max !== undefined && (value || min) >= max)}
-            className="flex-1 flex items-center justify-center bg-slate-800 hover:bg-slate-600 text-white hover:bg-slate-70 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 flex items-center justify-center bg-slate-400 hover:bg-slate-600 text-white hover:bg-slate-70 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
             aria-label="Aumentar"
           >
             <ChevronUp size={18} strokeWidth={3} />
@@ -129,7 +129,7 @@ export default function OrderInput({
             type="button"
             onClick={decrement}
             disabled={disabled || (value || min) <= min}
-            className="flex-1 flex items-center justify-center bg-slate-80 bg-slate-800 text-white hover:bg-slate-600  disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 flex items-center justify-center bg-slate-400 text-white hover:bg-slate-600  disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
             aria-label="Diminuir"
           >
             <ChevronDown size={18} strokeWidth={3} />
