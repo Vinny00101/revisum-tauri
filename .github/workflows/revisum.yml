@@ -1,9 +1,9 @@
 name: 'Publish Release'
 
 on:
-  #push:
-  #  branches:
-  #   - main # O build dispara quando você der push na main
+  push:
+    branches:
+     - main # O build dispara quando você der push na main
   workflow_dispatch:
 
 jobs:
