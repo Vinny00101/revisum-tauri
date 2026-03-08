@@ -84,3 +84,17 @@ export async function cancel_session(
         user_id: authData?.user.id, 
     });
 }
+
+export interface Accuracy{
+    total_correct: number;
+    total_itens: number;
+    accuracy: number;
+}
+
+export async function get_acurracy_geral_session(
+){
+    const authData = await AuthStoreManager.get();
+    return await invoke<{message: message, acurracy: Accuracy | null}>("get_acurracy_geral_session_command", {
+        user_id: authData?.user.id, 
+    });
+}

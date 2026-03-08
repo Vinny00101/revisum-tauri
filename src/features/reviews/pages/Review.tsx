@@ -12,6 +12,7 @@ import { useTauri } from "@/context/TauriContext";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/context/ToastContext";
 import { formatStudyTime } from "@/util/FormatData";
+import { Accuracy, get_acurracy_geral_session } from "@/tauri/session";
 
 export function Review() {
   const { disciplines } = useDisciplines();
@@ -21,6 +22,8 @@ export function Review() {
   const [selectionSearch, setSelectionSearch] = useState(String);
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const [accuracy, setAccurracy] = useState<Accuracy | null>();
+
 
 
   const fetchUserData = useCallback(async () => {
@@ -32,8 +35,20 @@ export function Review() {
       } else {
         setUser(result.user);
       }
+
+      const acurracy_geral = await get_acurracy_geral_session();
+
+      if (!acurracy_geral.message.code) {
+        showToast({ type: "error", message: "Erro:" + acurracy_geral.message.message });
+        return;
+      }
+
+      if (acurracy_geral.acurracy){
+        setAccurracy(acurracy_geral.acurracy);
+      }
+
     } catch (err: any) {
-      showToast({ type: "error", message: "Erro ao carregar dados do perfil" + err });
+      showToast({ type: "error", message: "Erro: " + err });
     }
   }, [showToast]);
 
@@ -116,17 +131,33 @@ export function Review() {
               <div className="w-12 h-12 rounded-xl bg-linear-to-br from-blue-50 to-blue-100 flex items-center justify-center border border-blue-200">
                 <Target size={24} className="text-blue-600" />
               </div>
+              {/* Opcional: Badge de volume total no canto superior */}
+              <span className="text-[10px] font-bold bg-blue-50 text-blue-700 px-2 py-1 rounded-lg uppercase tracking-wider">
+                {accuracy?.total_itens ?? 0} totais
+              </span>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900">{83}%</h3>
-            <p className="text-sm text-gray-600 mt-1">Taxa de acerto</p>
+
+            <div className="flex items-baseline gap-1">
+              <h3 className="text-2xl font-bold text-gray-900">
+                {(accuracy?.accuracy ?? 0).toFixed(1)}%
+              </h3>
+              <span className="text-xs text-gray-400 font-medium">
+                ({accuracy?.total_correct ?? 0}/{accuracy?.total_itens ?? 0})
+              </span>
+            </div>
+
+            <p className="text-sm text-gray-600 mt-1">Taxa de acerto acumulada</p>
+
             <div className="mt-3 flex items-center gap-2">
               <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-linear-to-r from-blue-500 to-blue-400 rounded-full"
-                  style={{ width: `${83}%` }}
+                  className="h-full bg-linear-to-r from-blue-500 to-blue-400 rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min(accuracy?.accuracy ?? 0, 100)}%` }}
                 />
               </div>
-              <span className="text-xs font-medium text-blue-600">+5%</span>
+              <span className="text-xs font-medium text-blue-600">
+                {accuracy?.total_correct ?? 0} acertos
+              </span>
             </div>
           </div>
         </div>

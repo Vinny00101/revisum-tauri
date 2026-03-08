@@ -6,7 +6,7 @@ use crate::{
         db_methods::{db_begin_tx, db_commit_tx},
     },
     error::app_error::AppError,
-    model::session::{ReviewSession, UpdateReviewSession},
+    model::session::{Accuracy, ReviewSession, UpdateReviewSession},
     repository::{
         content_repository::ContentRepository, discipline_repository::DisciplineRepository, objective_answer_repository::ObjectiveAnswerRepository, question_repository::QuestionRepository, session_repository::{ReviewLogInput, SessionRepository}, user_repository::UserRepository, user_status_repository::UserStatusRepository
     },
@@ -29,6 +29,12 @@ pub struct SessionDataOne {
 pub struct SessionDataAll {
     pub message: Message,
     pub sessions: Option<Vec<ReviewSession>>,
+}
+
+#[derive(serde::Serialize)]
+pub struct AccuracyData {
+    pub message: Message,
+    pub acurracy: Option<Accuracy>,
 }
 
 #[derive(Debug, serde::Deserialize)]
@@ -314,6 +320,36 @@ impl<'a> ReviewService<'a> {
         Ok(Message {
             code: true,
             message: "Sessão cancelada com sucesso".into(),
+        })
+    }
+
+    pub async fn get_acurracy_geral_session(
+        &self,
+        state: State<'_, DbStore>,
+        user_id: i64,
+    ) -> Result<AccuracyData, AppError> {
+        let mut tx = db_begin_tx(&state).await?;
+
+        if !self.user_repository.exists_by_id(user_id).await?{
+            return Ok(AccuracyData { 
+                message: Message { 
+                    code: true, 
+                    message: "Usuário não encontrado".into() 
+                }, 
+                acurracy: None 
+            });
+        }
+
+        let acurracy = self.session_repository.get_acurracy_geral_session(&mut tx, user_id).await?;
+
+        db_commit_tx(tx).await?;
+
+        Ok(AccuracyData {
+            message: Message { 
+                code: true, 
+                message: "Busca efetuada com sucesso".into() 
+            },
+            acurracy: acurracy
         })
     }
 }

@@ -1,7 +1,7 @@
 use crate::{
     db::{config::DbStore, db_methods::ExecuteResult},
     error::app_error::AppError,
-    model::session::{ReviewSession, UpdateReviewSession},
+    model::session::{Accuracy, ReviewSession, UpdateReviewSession},
     repository::base_repository::{EntityRepository, MutationRepository, QueryRepository},
 };
 use serde_json::Value as JsonValue;
@@ -241,6 +241,22 @@ impl<'a> SessionRepository<'a> {
         ).await
     }
 
+    pub async fn get_acurracy_geral_session(
+        &self,
+        tx: &mut Transaction<'_, Sqlite>,
+        user_id: i64,
+    ) -> Result<Option<Accuracy>, AppError> {
+        self.find_one_tx(
+            tx, 
+        "SELECT 
+                SUM(correct_items) as total_correct,
+                SUM(total_items) as total_itens,
+                (CAST(SUM(correct_items) AS REAL) / SUM(total_items)) * 100 as accuracy
+            FROM review_session WHERE review_session.user_id = ?" ,
+            vec![JsonValue::from(user_id)]
+        ).await
+    }
+
 }
 
 // Implementações das Traits para manter o padrão do seu BaseRepository
@@ -263,6 +279,12 @@ impl<'a> EntityRepository<ReviewSession> for SessionRepository<'a> {
 }
 
 impl<'a> EntityRepository<StudyItemState> for SessionRepository<'a> {
+    fn get_state(&self) -> &State<'_, DbStore> {
+        &self.state
+    }
+}
+
+impl<'a> EntityRepository<Accuracy> for SessionRepository<'a> {
     fn get_state(&self) -> &State<'_, DbStore> {
         &self.state
     }

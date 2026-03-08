@@ -38,7 +38,8 @@ use command::{
         get_one_session_review_command,
         save_item_review_command,
         cancel_session_review_command,
-        save_item_review_question_obj_command
+        save_item_review_question_obj_command,
+        get_acurracy_geral_session_command
     }
 };
 
@@ -107,7 +108,8 @@ pub fn run() {
             get_one_session_review_command,
             save_item_review_command,
             cancel_session_review_command,
-            save_item_review_question_obj_command
+            save_item_review_question_obj_command,
+            get_acurracy_geral_session_command
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

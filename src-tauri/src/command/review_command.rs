@@ -1,6 +1,6 @@
 use tauri::{command, State};
 
-use crate::{db::config::DbStore, model::session::UpdateReviewSession, repository::session_repository::ReviewLogInput, service::{dto::message_response::Message, review_service::{CreateSessionMessage, ReviewQuestionObjInput, SessionDataAll, SessionDataOne}, service_factory::ServiceFactory}};
+use crate::{db::config::DbStore, model::session::UpdateReviewSession, repository::session_repository::ReviewLogInput, service::{dto::message_response::Message, review_service::{AccuracyData, CreateSessionMessage, ReviewQuestionObjInput, SessionDataAll, SessionDataOne}, service_factory::ServiceFactory}};
 
 #[command(rename_all = "snake_case")]
 pub async fn create_session_review_command(
@@ -76,4 +76,14 @@ pub async fn save_item_review_question_obj_command(
     let service = ServiceFactory::review(state.clone());
 
     service.save_item_review_question_obj(state, input).await.map_err(|e| e.to_frontend())
+}
+
+#[command(rename_all = "snake_case")]
+pub async fn get_acurracy_geral_session_command(
+    state: State<'_, DbStore>,
+    user_id: i64,
+) -> Result<AccuracyData, String>{
+    let service = ServiceFactory::review(state.clone());
+
+    service.get_acurracy_geral_session(state, user_id).await.map_err(|e| e.to_frontend())
 }

@@ -18,8 +18,8 @@ export function DisciplineProgress({ disciplines }: { disciplines: Discipline[] 
 
                 <div className="space-y-4">
                     {disciplines && disciplines.length > 0 ? (disciplines.map((d) => ( d.progress_percent > 0 && 
-                        <div>
-                            <div key={d.name} className="flex justify-between text-sm mb-1">
+                        <div key={d.id}>
+                            <div className="flex justify-between text-sm mb-1">
                                 <span className="text-gray-600">{d.name}</span>
                                 <span className="font-medium text-gray-900">{d.progress_percent}</span>
                             </div>

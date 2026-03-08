@@ -21,3 +21,10 @@ pub struct UpdateReviewSession {
     pub correct_items: Option<i64>,
     pub accuracy: Option<f64>,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct Accuracy{
+    pub total_correct: i64,
+    pub total_itens: i64,
+    pub accuracy: f64,
+}
