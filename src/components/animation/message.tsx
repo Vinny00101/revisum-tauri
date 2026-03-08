@@ -1,63 +1,82 @@
+import { MessageType } from "@/types/types";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { Check, CircleX, Info, TriangleAlert } from "lucide-react";
+import { useEffect } from "react";
 
 interface AnimatedMessageProps {
-  message: { code: boolean; message: string } | null;
+  message: { type: MessageType; message: string } | null;
   onMessageClear?: () => void;
   duration?: number;
 }
 
-export default function AnimatedMessage({ 
-  message, 
-  onMessageClear, 
-  duration = 3000 
+const styles = {
+  success: {
+    bg: "bg-green-50 border-green-400 text-green-800",
+    icon: Check,
+  },
+  info: {
+    bg: "bg-blue-50 border-blue-400 text-blue-800",
+    icon: Info,
+  },
+  warning: {
+    bg: "bg-yellow-50 border-yellow-400 text-yellow-800",
+    icon: TriangleAlert,
+  },
+  error: {
+    bg: "bg-red-50 border-red-400 text-red-800",
+    icon: CircleX,
+  },
+};
+
+export default function AnimatedMessage({
+  message,
+  onMessageClear,
+  duration = 3000,
 }: AnimatedMessageProps) {
-  const [showMessage, setShowMessage] = useState(false);
 
   useEffect(() => {
-    if (message) {
-      // Inicia animação de entrada
-      setShowMessage(true);
+    if (!message) return;
 
-      // Timer para animação de saída
-      const exitTimer = setTimeout(() => {
-        setShowMessage(false);
-        
-        // Remove após animação de saída
-        const removeTimer = setTimeout(() => {
-          if (onMessageClear) {
-            onMessageClear();
-          }
-        }, 300); // Tempo da animação de saída
-        
-        return () => clearTimeout(removeTimer);
-      }, duration - 300); // Subtrai o tempo da animação de saída
+    const timer = setTimeout(() => {
+      onMessageClear?.();
+    }, duration);
 
-      return () => {
-        clearTimeout(exitTimer);
-      };
-    }
+    return () => clearTimeout(timer);
   }, [message, duration, onMessageClear]);
+
+  if (!message) return null;
+
+  const style = styles[message.type];
+  const Icon = style.icon;
 
   return (
     <AnimatePresence>
-      {message && showMessage && (
-        <div className="absolute w-full h-full flex items-end overflow-hidden overscroll-none pointer-events-none">
-          <motion.p
-            key={message.message}
-            className={`
-              w-full text-center px-4 py-2 h-fit
-              ${message.code ? "bg-green-600 text-white" : "bg-red-600 text-white"}
-              pointer-events-auto
-            `}
-            initial={{ opacity: 0, y: 100 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 100 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-          >
+      {message && (
+        <motion.div
+          className={`
+            fixed top-22 right-4 z-80
+            flex items-start gap-3
+            max-w-sm w-full
+            border rounded-xl px-4 py-3 shadow-md
+            ${style.bg}
+          `}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.25 }}
+        >
+          <Icon className="w-5 h-5 mt-0.5 shrink-0" />
+          <p className="flex-1 text-sm leading-snug">
             {message.message}
-          </motion.p>
-        </div>
+          </p>
+
+          <button
+            onClick={() => onMessageClear?.()}
+            className="text-lg leading-none opacity-60 hover:opacity-100"
+          >
+            ✕
+          </button>
+        </motion.div>
       )}
     </AnimatePresence>
   );

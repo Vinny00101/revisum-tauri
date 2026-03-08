@@ -1,0 +1,1 @@
+export type ReviewDifficulty = 'WRONG' | 'EASY' | 'MEDIUM' | 'HARD';

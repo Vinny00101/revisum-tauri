@@ -1,13 +1,19 @@
 import "./App.css";
+import ScrollToTop from "./components/ScrollTop";
 import { TauriProvider } from "./context/TauriContext";
+import { ToastProvider } from "./context/ToastContext";
+import AppLayout from "./layouts/AppLayout";
 import AppRoutes from "./routes/AppRoutes";
 
 function App() {
   return (
     <TauriProvider>
-      <div>
-        <AppRoutes/>
-      </div>
+      <ToastProvider>
+          <AppLayout>
+            <ScrollToTop/>
+            <AppRoutes />
+          </AppLayout>
+      </ToastProvider>
     </TauriProvider>
   )
 }

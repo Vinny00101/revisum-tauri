@@ -1,11 +1,11 @@
-// src/routes/AppRoutes.tsx
-
 import ProtectedRoutes from "@/components/ProtectedRoute";
-import DashboardLayout from "@/pages/DashboardLayout";
-import Discipline from "@/pages/disciplines/Discipline";
-import Login from "@/pages/Login";
-import DashboardMain from "@/pages/painel/DashboardMain";
-import Register from "@/pages/Register";
+import { Login, Register } from "@/features/auth";
+import { Dashboard } from "@/features/dashboard";
+import { Context, DisciplinePage, DisciplineDetail } from "@/features/discipline";
+import { Profile } from "@/features/profile";
+import { Review, ReviewSessionPage } from "@/features/reviews";
+import DashboardLayout from "@/layouts/DashboardLayout";
+import DashboardMain from "@/layouts/DashboardMain";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 
@@ -17,14 +17,27 @@ export default function AppRoutes() {
 
       <Route element={<ProtectedRoutes />}>
         <Route element={<DashboardLayout />}>
-          <Route path="/dashboard" element={<DashboardMain />} />
-          <Route path="/disciplines" element={<Discipline />} />
-          <Route path="/reviews" element={<DashboardMain />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+
+          <Route path="/disciplines">
+            <Route index element={<DisciplinePage />}/>
+            <Route path=":id">
+              <Route index element={<DisciplineDetail/>}/>
+              <Route path=":contentid" element={<Context/>}/>
+            </Route>
+          </Route>
+
+          <Route path="/reviews">
+            <Route index element={<Review/> }/>
+            <Route path=":id">
+              <Route index element={<ReviewSessionPage/>}/>
+            </Route>
+          </Route>
           <Route path="/questions" element={<DashboardMain />} />
           <Route path="/categories" element={<DashboardMain />} />
           <Route path="/analysis" element={<DashboardMain />} />
           <Route path="/config" element={<DashboardMain />} />
-          <Route path="/profile" element={<DashboardMain />} />
+          <Route path="/profile" element={<Profile/>} />
         </Route>
       </Route>
 

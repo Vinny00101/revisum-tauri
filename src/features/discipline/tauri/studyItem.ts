@@ -1,0 +1,32 @@
+import { message } from "@/types/interfaces";
+import AuthStoreManager from "@/util/AuthStoreManager";
+import { invoke } from "@tauri-apps/api/core";
+import { CreateStudyItemInput, StudyItemFullResponse } from "../types/interfaces";
+
+export interface StudyItemAll{
+    message: message;
+    study_items: StudyItemFullResponse[] | null;
+}
+
+export async function create_study_item(
+    input: CreateStudyItemInput
+){
+    const authData = await AuthStoreManager.get();
+    return await invoke<message>("create_study_item_command", {user_id: authData?.user.id ,input: input});
+}
+
+export async function get_all_study_item(
+    content_id: number,
+): Promise<StudyItemAll>{
+    const authData = await AuthStoreManager.get();
+    return await invoke<StudyItemAll>("get_all_study_item_command", {user_id: authData?.user.id ,content_id: content_id});
+}
+
+export async function delete_study_item(id: number, content_id: number ) {
+    const authData = await AuthStoreManager.get();
+    return await invoke<message>("delete_study_item_command", {
+        user_id: authData?.user.id ,
+        content_id: content_id,
+        study_item_id:id
+    });
+}
