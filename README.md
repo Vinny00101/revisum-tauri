@@ -69,6 +69,10 @@ O sistema utiliza um banco relacional robusto com integridade referencial e auto
 
 # licença
 
-Este projeto é distribuído sob a ````licença MIT````. Consulte o arquivo LICENSE para mais detalhes.
+Este projeto é um software livre: você pode redistribuí-lo e/ou modificá-lo sob os termos da GNU General Public License conforme publicada pela Free Software Foundation, seja a versão 3 da Licença, ou (a seu critério) qualquer versão posterior.
+
+O Revisum é distribuído na esperança de que seja útil, mas SEM QUALQUER GARANTIA; sem mesmo a garantia implícita de COMERCIALIZAÇÃO ou ADEQUAÇÃO A UM PROPÓSITO PARTICULAR.
+
+Consulte o arquivo **LICENSE** para mais detalhes.
 
 
