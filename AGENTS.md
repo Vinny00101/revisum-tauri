@@ -16,3 +16,4 @@
 - Não implementar versões diretamente em `main` nem promover trabalho incompleto como release.
 - A linha em implementação é 0.4.0; a primeira prévia é 0.4.0-alpha.1. Consultar `docs/versoes/0.4.0.md` para escopo e validações. Cada entrega publicada recebe novo número conforme seu escopo; sincronizar manifests, lockfiles, configuração Tauri e tag.
 - Arquivos locais de IDE em `.vs/` e `.vscode/` devem permanecer fora do controle de versão.
+- Executar a CI automaticamente apenas em pushes para `dev`/`main` e PRs com destino à `dev`; branches de trabalho podem ser validadas manualmente. Cancelar validações anteriores da mesma branch ou PR quando uma nova execução começar. Publicação de instaladores permanece limitada a tags `v*` ou execução manual.
