@@ -63,9 +63,13 @@ O sistema utiliza um banco relacional robusto com integridade referencial e auto
 # Instalação e Execução
 
 ## Pré-requisitos
-- Node.js (v18+)
-- Rust & Cargo (para compilação do Tauri)
+- Node.js (v22.12+; CI em 22.21.0)
+- Rust & Cargo 1.93.0 (toolchain definida em rust-toolchain.toml)
 - Gerenciador de pacotes (npm, yarn ou pnpm)
+
+Use `npm ci` para instalar as dependências do lockfile. Execute `npm run version:check`, `npm test`, `npm run build` e `cargo test --manifest-path src-tauri/Cargo.toml --lib --locked` para validar a entrega.
+
+A linha 0.4.0 começa pela proteção do SQLite local. Consulte [escopo, backups e recuperação da prévia](docs/versoes/0.4.0.md) e o [planejamento incremental](docs/planejamento/README.md). Acesso a agentes, redesign do workspace e remoção do login são etapas posteriores.
 
 # licença
 

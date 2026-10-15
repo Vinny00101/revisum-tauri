@@ -3196,7 +3196,7 @@ dependencies = [
 
 [[package]]
 name = "revisum"
-version = "0.3.0"
+version = "0.4.0-alpha.1"
 dependencies = [
  "argon2",
  "async-trait",
@@ -3205,6 +3205,7 @@ dependencies = [
  "rand 0.8.5",
  "serde",
  "serde_json",
+ "sha2",
  "sqlx",
  "tauri",
  "tauri-build",
@@ -3212,6 +3213,7 @@ dependencies = [
  "tauri-plugin-opener",
  "tauri-plugin-sql",
  "tauri-plugin-store",
+ "tempfile",
  "thiserror 1.0.69",
  "tokio",
  "uuid",

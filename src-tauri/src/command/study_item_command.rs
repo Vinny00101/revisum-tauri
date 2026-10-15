@@ -15,6 +15,7 @@ pub async fn create_study_item_command(
     user_id: i64,
     input: CreateStudyItemInput,
 ) -> Result<Message, String> {
+    let _access = state.access().await?;
     let service = ServiceFactory::study_item(state.clone());
 
     service
@@ -29,6 +30,7 @@ pub async fn get_all_study_item_command(
     user_id: i64,
     content_id: i64,
 ) -> Result<StudyItemDataAll, String> {
+    let _access = state.access().await?;
     let service = ServiceFactory::study_item(state);
 
     service
@@ -44,6 +46,7 @@ pub async fn get_study_item_command(
     user_id: i64,
     content_id: i64,
 ) -> Result<StudyItemDataOne, String> {
+    let _access = state.access().await?;
     let service = ServiceFactory::study_item(state);
 
     service
@@ -59,6 +62,7 @@ pub async fn delete_study_item_command(
     user_id: i64,
     content_id: i64,
 ) -> Result<Message, String> {
+    let _access = state.access().await?;
     let service = ServiceFactory::study_item(state.clone());
 
     service
@@ -73,6 +77,7 @@ pub async fn get_review_data_commmand(
     user_id: i64,
     content_id: i64,
 ) -> Result<ReviewData, String>{
+    let _access = state.access().await?;
     let service = ServiceFactory::study_item(state.clone());
 
     service.get_review_data(user_id, content_id).await.map_err(|e|e.to_frontend())

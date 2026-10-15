@@ -3,7 +3,7 @@ name: 'Publish Release'
 on:
   push:
     tags:
-     - v* # O build dispara quando você der push na main
+     - v*
   workflow_dispatch:
 
 jobs:
@@ -35,16 +35,16 @@ jobs:
         if: contains(matrix.platform, 'ubuntu')
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev patchelf
 
       - name: setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '22.21.0'
           cache: 'npm'
 
-      - name: install Rust stable
-        uses: dtolnay/rust-toolchain@stable
+      - name: install Rust
+        uses: dtolnay/rust-toolchain@1.93.0
         with:
           targets: ${{ matrix.target }}
 
@@ -54,7 +54,20 @@ jobs:
           workspaces: './src-tauri -> target'
 
       - name: install frontend dependencies
-        run: npm install
+        run: npm ci
+
+      - name: validate release version
+        id: version
+        run: node scripts/version.mjs --check --github-output
+
+      - name: validate frontend
+        run: |
+          npm test
+          npm run build
+
+      - name: validate database safety
+        if: matrix.target != 'aarch64-pc-windows-msvc'
+        run: cargo test --manifest-path src-tauri/Cargo.toml --lib --locked
 
       - uses: tauri-apps/tauri-action@v0
         env:
@@ -64,5 +77,5 @@ jobs:
           releaseName: 'v__VERSION__'
           releaseBody: 'Nova versão do Revisum disponível!'
           releaseDraft: true # Cria como rascunho para você revisar antes de publicar
-          prerelease: false
+          prerelease: ${{ steps.version.outputs.prerelease == 'true' }}
           args: ${{ matrix.args }}

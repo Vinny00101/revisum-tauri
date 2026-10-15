@@ -7,11 +7,13 @@ interface AuthData {
   savedAt: number;
 }
 
-const store = await load('store.json');
+// Defer auth storage until StorageGate has released the normal application.
+const getStore = () => load('store.json');
 
 export default class AuthStoreManager {
 
   static async set(user: User, days: number = 7) {
+    const store = await getStore();
     const now = Date.now();
 
     const data: AuthData = {
@@ -25,6 +27,7 @@ export default class AuthStoreManager {
   }
 
   static async get(): Promise<AuthData | null> {
+    const store = await getStore();
     const data = await store.get<AuthData>("auth");
 
     if (!data) return null;
@@ -38,6 +41,7 @@ export default class AuthStoreManager {
   }
 
   static async remove() {
+    const store = await getStore();
     await store.delete("auth");
     await store.save();
   }

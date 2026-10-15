@@ -11,6 +11,7 @@ pub async fn create_content_command(
     description: Option<String>,
     display_order: i64
 ) -> Result<Message, String>{
+    let _access = state.access().await?;
     let service = ServiceFactory::content(state);
 
     service.create_content(user_id, discipline_id, title, description, display_order).await.map_err(|e| e.to_frontend())
@@ -27,6 +28,7 @@ pub async fn update_content_command(
     description: Option<String>,
     display_order: Option<i64>
 ) -> Result<Message, String>{
+    let _access = state.access().await?;
     let service = ServiceFactory::content(state);
 
     service.update_content(user_id, discipline_id, content_id, title, description, display_order).await.map_err(|e| e.to_frontend())
@@ -38,6 +40,7 @@ pub async fn get_all_content_command(
     user_id: i64,
     discipline_id: i64,
 ) -> Result<ContentDataAll, String>{
+    let _access = state.access().await?;
     let service = ServiceFactory::content(state);
 
     service.get_all_content(user_id, discipline_id).await.map_err(|e| e.to_frontend())
@@ -50,6 +53,7 @@ pub async fn get_content_command(
     content_id: i64,
     discipline_id: i64,
 ) -> Result<ContentDataOne, String>{
+    let _access = state.access().await?;
     let service = ServiceFactory::content(state);
 
     service.get_content(user_id, content_id, discipline_id).await.map_err(|e| e.to_frontend())
@@ -60,6 +64,7 @@ pub async fn get_all_content_user_command(
     state: State<'_, DbStore>,
     user_id: i64,
 ) -> Result<ContentDataAll, String> {
+    let _access = state.access().await?;
     let service = ServiceFactory::content(state);
 
     service.get_all_content_user(user_id).await.map_err(|e| e.to_frontend())
@@ -72,6 +77,7 @@ pub async fn delete_content_command(
     content_id: i64,
     discipline_id: i64,
 ) -> Result<Message, String>{
+    let _access = state.access().await?;
     let service = ServiceFactory::content(state.clone());
 
     service.delete_content(state,user_id, content_id, discipline_id).await.map_err(|e| e.to_frontend())

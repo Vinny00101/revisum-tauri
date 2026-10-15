@@ -15,7 +15,7 @@ O diagnóstico registra o estado observado naquela análise. Suas referências a
 5. Promover a entrega validada de `dev` para `main`. O fluxo de implementação é `<descricao>/<versão>` → `dev` → `main`.
 6. Preparar tag e publicação conforme o processo de release aplicável. Não publicar uma versão incompleta nem tratar a criação da branch como uma release.
 
-Durante a preparação deste planejamento, `dev` foi sincronizada com a base `main`. A branch de trabalho atual é `protecao-dados/0.4.0`, renomeada para seguir a regra de descrição por versão. A implementação da 0.4.0 ainda não começou. O planejamento e a limpeza de `.vs`/`.vscode` ficam na branch de trabalho para acompanhar essa fase.
+Durante a preparação deste planejamento, `dev` foi sincronizada com a base `main`. A branch de trabalho atual é `protecao-dados/0.4.0`, renomeada para seguir a regra de descrição por versão. A primeira implementação está na prévia **0.4.0-alpha.1**; consulte [entrega e validação da 0.4.0](../versoes/0.4.0.md). O diagnóstico original continua como referência histórica, e o documento de versão distingue implementação de planejamento.
 
 ## Versionamento
 
@@ -26,6 +26,6 @@ Durante a preparação deste planejamento, `dev` foi sincronizada com a base `ma
 - Sincronizar `package.json`, `package-lock.json`, `src-tauri/Cargo.toml`, `src-tauri/Cargo.lock` e `src-tauri/tauri.conf.json` ao preparar uma entrega. Verificar também a tag e os metadados de publicação.
 - A organização documental atual não altera a versão do aplicativo nem implementa as features planejadas.
 
-## Prioridade da próxima fase
+## Prioridade da fase atual
 
 Seguir os critérios de saída do diagnóstico: compatibilidade das migrations existentes, tratamento controlado das variantes LF/CRLF, backup/restauração, preflight e recuperação. Preservar banco, arquivos e histórico. A remoção do login e as integrações vêm depois dessas proteções.

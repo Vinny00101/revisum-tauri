@@ -9,12 +9,6 @@ pub enum AppError {
     #[error("Erro no banco de dados: {0}")]
     DatabaseMethods(String),
 
-    #[error("Falha na migração: {0}")]
-    Migration(String),
-
-    #[error("Conexão falhou: {0}")]
-    ConnectionFailed(String),
-    
     #[error("Registro não encontrado: {0}")]
     NotFound(String),
 

@@ -4,17 +4,18 @@ import { TauriProvider } from "./context/TauriContext";
 import { ToastProvider } from "./context/ToastContext";
 import AppLayout from "./layouts/AppLayout";
 import AppRoutes from "./routes/AppRoutes";
+import StorageGate from "./features/storage/StorageGate";
 
 function App() {
   return (
-    <TauriProvider>
+    <StorageGate><TauriProvider>
       <ToastProvider>
           <AppLayout>
             <ScrollToTop/>
             <AppRoutes />
           </AppLayout>
       </ToastProvider>
-    </TauriProvider>
+    </TauriProvider></StorageGate>
   )
 }
 

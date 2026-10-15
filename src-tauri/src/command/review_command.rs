@@ -10,6 +10,7 @@ pub async fn create_session_review_command(
     content_id: i64,
     session_type: String,
 ) -> Result<CreateSessionMessage, String>{
+    let _access = state.access().await?;
     let service = ServiceFactory::review(state);
 
     service.create_session_review(user_id, discipline_id, content_id, session_type).await.map_err(|e| e.to_frontend())
@@ -22,6 +23,7 @@ pub async fn update_session_review_command(
     user_id: i64,
     update: UpdateReviewSession,
 ) -> Result<Message, String>{
+    let _access = state.access().await?;
     let service = ServiceFactory::review(state.clone());
 
     service.update_session_review(state,session_id, user_id, update).await.map_err(|e| e.to_frontend())
@@ -32,6 +34,7 @@ pub async fn get_all_session_review_command(
     state: State<'_, DbStore>,
     user_id: i64,
 ) -> Result<SessionDataAll, String>{
+    let _access = state.access().await?;
     let service = ServiceFactory::review(state);
 
     service.get_all_session_review(user_id).await.map_err(|e| e.to_frontend())
@@ -42,6 +45,7 @@ pub async fn get_one_session_review_command(
     state: State<'_, DbStore>,
     session_id: i64,
 ) -> Result<SessionDataOne, String>{
+    let _access = state.access().await?;
     let service = ServiceFactory::review(state);
 
     service.get_session_review(session_id).await.map_err(|e| e.to_frontend())
@@ -52,6 +56,7 @@ pub async fn save_item_review_command(
     state: State<'_, DbStore>,
     input: ReviewLogInput,
 ) -> Result<Message, String>{
+    let _access = state.access().await?;
     let service = ServiceFactory::review(state.clone());
     
     service.save_item_review(state, input).await.map_err(|e| e.to_frontend())
@@ -63,6 +68,7 @@ pub async fn cancel_session_review_command(
     session_id: i64,
     user_id: i64,
 ) -> Result<Message, String>{
+    let _access = state.access().await?;
     let service = ServiceFactory::review(state);
 
     service.cancel_session_review(session_id, user_id).await.map_err(|e| e.to_frontend())
@@ -73,6 +79,7 @@ pub async fn save_item_review_question_obj_command(
     state: State<'_, DbStore>,
     input: ReviewQuestionObjInput,
 )-> Result<Message, String>{
+    let _access = state.access().await?;
     let service = ServiceFactory::review(state.clone());
 
     service.save_item_review_question_obj(state, input).await.map_err(|e| e.to_frontend())
@@ -83,6 +90,7 @@ pub async fn get_acurracy_geral_session_command(
     state: State<'_, DbStore>,
     user_id: i64,
 ) -> Result<AccuracyData, String>{
+    let _access = state.access().await?;
     let service = ServiceFactory::review(state.clone());
 
     service.get_acurracy_geral_session(state, user_id).await.map_err(|e| e.to_frontend())

@@ -1,6 +1,7 @@
 use tauri::{async_runtime::block_on, Manager};
 
-use crate::{db::{config::init_db}, filesystem::init_directories};
+use crate::{db::storage::StorageManager, filesystem::init_directories};
+use command::storage_command::{get_storage_status, list_storage_backups, create_storage_backup, restore_storage_backup};
 use command::{
     user_command::{
         authentication_user_command, 
@@ -63,12 +64,16 @@ pub fn run() {
         .setup(|app| {
             let app_handle = app.handle().clone();
             
-            let paths = init_directories(&app_handle).map_err(|e| e.to_string())?;
-            app_handle.manage(paths);
-
-            let state = block_on(init_db(&app_handle))
-                .map_err(|e| format!("Falha na inicialização do banco: {}", e))?;
-            app_handle.manage(state);
+            let root = app_handle.path().app_data_dir()?;
+            let (storage, database) = block_on(StorageManager::initialize(root));
+            if let Some(database) = database {
+                let paths = init_directories(&app_handle).map_err(|e| e.to_string())?;
+                app_handle.manage(paths);
+                app_handle.manage(database);
+            }
+            // Recovery commands remain available even when DbStore is not
+            // registered. Study commands cannot obtain a pool in that state.
+            app_handle.manage(storage);
             Ok(())
         })
         .plugin(tauri_plugin_store::Builder::new().build())
@@ -76,6 +81,10 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
             greet,
+            get_storage_status,
+            list_storage_backups,
+            create_storage_backup,
+            restore_storage_backup,
             // user
             create_user_command,
             authentication_user_command,

@@ -14,5 +14,5 @@
 - Trabalhar em uma branch `<descricao>/<versão>` criada a partir da `dev` atualizada, com uma descrição curta em minúsculas e palavras separadas por hífen, por exemplo `protecao-dados/0.4.0`. Criar cada branch no início da respectiva versão, não antecipadamente para todo o roadmap.
 - Integrar a versão concluída e validada em `dev`; após validação integrada, promover `dev` para `main`.
 - Não implementar versões diretamente em `main` nem promover trabalho incompleto como release.
-- A próxima versão de implementação é 0.4.0. Cada entrega publicada recebe novo número conforme seu escopo; sincronizar manifests, lockfiles, configuração Tauri e tag.
+- A linha em implementação é 0.4.0; a primeira prévia é 0.4.0-alpha.1. Consultar `docs/versoes/0.4.0.md` para escopo e validações. Cada entrega publicada recebe novo número conforme seu escopo; sincronizar manifests, lockfiles, configuração Tauri e tag.
 - Arquivos locais de IDE em `.vs/` e `.vscode/` devem permanecer fora do controle de versão.
