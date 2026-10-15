@@ -9,13 +9,13 @@ O diagnóstico registra o estado observado naquela análise. Suas referências a
 ## Fluxo de branches
 
 1. Atualizar as referências de `origin` e sincronizar `dev` com `main`, preservando os commits existentes. Usar fast-forward quando possível; resolver divergências sem force-push.
-2. Criar uma branch `codex/<versão>` a partir da `dev` atualizada quando começar o trabalho dessa versão. A primeira é `codex/0.4.0`. Criar as branches futuras somente quando suas versões forem iniciadas, para que partam do estado atualizado.
-3. Implementar, testar e revisar as alterações na branch da versão. Correções publicadas usam seu próprio número, por exemplo `codex/0.4.1`.
+2. Criar uma branch `<descricao>/<versão>` a partir da `dev` atualizada quando começar o trabalho dessa versão. Usar uma descrição curta em minúsculas e palavras separadas por hífen. A primeira é `protecao-dados/0.4.0`. Criar as branches futuras somente quando suas versões forem iniciadas, para que partam do estado atualizado.
+3. Implementar, testar e revisar as alterações na branch da versão. Correções publicadas usam seu próprio número e uma descrição do escopo, por exemplo `correcoes-revisao/0.4.1`.
 4. Integrar o trabalho concluído em `dev` e executar a validação integrada.
-5. Promover a entrega validada de `dev` para `main`. O fluxo de implementação é `codex/<versão>` → `dev` → `main`.
+5. Promover a entrega validada de `dev` para `main`. O fluxo de implementação é `<descricao>/<versão>` → `dev` → `main`.
 6. Preparar tag e publicação conforme o processo de release aplicável. Não publicar uma versão incompleta nem tratar a criação da branch como uma release.
 
-Durante a preparação deste planejamento, `dev` foi sincronizada com a base `main` e a branch `codex/0.4.0` foi criada. A implementação da 0.4.0 ainda não começou. O planejamento e a limpeza de `.vs`/`.vscode` ficam na branch de trabalho para acompanhar essa fase.
+Durante a preparação deste planejamento, `dev` foi sincronizada com a base `main`. A branch de trabalho atual é `protecao-dados/0.4.0`, renomeada para seguir a regra de descrição por versão. A implementação da 0.4.0 ainda não começou. O planejamento e a limpeza de `.vs`/`.vscode` ficam na branch de trabalho para acompanhar essa fase.
 
 ## Versionamento
 
