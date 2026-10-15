@@ -2,6 +2,8 @@
 
 Esta pasta guarda temporariamente o diagnóstico e o planejamento da evolução do projeto. O documento principal é [Diagnóstico técnico e roadmap](revisum-diagnostico-e-roadmap.md), elaborado em 15/10/2026 sobre a base v0.3.0.
 
+A direção de produto foi ampliada em [Workspace e aprendizagem assistida](visao-workspace-e-aprendizagem.md): redesign completo da experiência, arquivos relacionados, provas de concurso, análise de desempenho, planos por próximas revisões, pesquisa de sites/vídeos e curadoria persistente. Esse complemento detalha os requisitos e orienta o roadmap atualizado a partir da 0.7.0. As prioridades de proteção dos dados e retirada do login permanecem.
+
 O diagnóstico registra o estado observado naquela análise. Suas referências a arquivos fora do repositório e à ausência de mudanças descrevem a etapa original; a inclusão desta pasta e a limpeza dos arquivos de editor são preparativos posteriores. Os nomes de módulos novos e as versões do roadmap são propostas, não funcionalidades já implementadas.
 
 ## Fluxo de branches
